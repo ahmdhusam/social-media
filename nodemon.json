@@ -1,0 +1,7 @@
+{
+    "env": {
+        "SECRET_KEY": "secret",
+        "PORT": 5050,
+        "DBURL": "mongodb://127.0.0.1:27017/twitter"
+    }
+}
