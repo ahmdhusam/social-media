@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 import type { NextFunction, Request, Response } from 'express';
-import type { Req, ValideUser } from '@root/types';
+import type { Req, ValideUser } from '../types';
 
 export default (request: Request, _: Response, next: NextFunction) => {
     const req: Req = request as Req;

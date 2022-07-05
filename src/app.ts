@@ -7,11 +7,13 @@ import rateLimit from 'express-rate-limit';
 import compression from 'compression';
 import morgan from 'morgan';
 import { graphqlHTTP } from 'express-graphql';
-import { buildSchema } from 'graphql';
 import mongoose from 'mongoose';
 
 // midllewares
 import auth from './midlleware/auth';
+
+// GraphQL Schema
+import graphQLSchema from './graphql/schema';
 
 const app = express();
 
@@ -39,7 +41,7 @@ app.use(auth);
 app.use(
     '/graphql',
     graphqlHTTP({
-        schema: buildSchema(``),
+        schema: graphQLSchema,
         rootValue: {},
         graphiql: true,
         customFormatErrorFn: err => {
