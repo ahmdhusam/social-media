@@ -2,11 +2,18 @@ import fs from 'fs';
 import path from 'path';
 
 import express, { NextFunction, Request, Response } from 'express';
-import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
 // import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
+import { graphqlHTTP } from 'express-graphql';
+import { buildSchema } from 'graphql';
+import mongoose from 'mongoose';
+
+// midllewares
+import auth from './midlleware/auth';
+
+const app = express();
 
 const limiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 60 minutes
@@ -14,8 +21,6 @@ const limiter = rateLimit({
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false // Disable the `X-RateLimit-*` headers
 });
-
-const app = express();
 
 const fileStream = fs.createWriteStream(path.join(__dirname, 'log.log'), {
     flags: 'a'
@@ -28,6 +33,20 @@ app.use(compression());
 app.use(express.json());
 app.use(morgan('tiny', { stream: fileStream }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
+app.use(auth);
+
+app.use(
+    '/graphql',
+    graphqlHTTP({
+        schema: buildSchema(``),
+        rootValue: {},
+        graphiql: true,
+        customFormatErrorFn: err => {
+            return err;
+        }
+    })
+);
 
 app.use((_: Request, res: Response) => {
     res.end('404');
@@ -45,6 +64,6 @@ const PORT = process.env.PORT ?? 5500;
         .catch(err => console.log('DBError', err));
 
     app.listen(PORT, () => {
-        console.log('App running on ', PORT);
+        console.log('Server running on ', PORT);
     });
 })();
