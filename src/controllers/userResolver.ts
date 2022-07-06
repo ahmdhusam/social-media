@@ -1,11 +1,12 @@
-import type { ILoginInput, IReturnUser, IUser, IUserInput, IUserResolver } from '../types';
+import type { Request } from 'express';
+import type { ILoginInput, IReturnUser, IUser, IUserInput, IUserResolver, Req } from '../types';
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import UserModel from '../models/userModel';
 
-// libs
+// Libs
 import { UserValidate } from '../libs/validator';
 import { parseUser } from '../libs/userParser';
 
@@ -21,14 +22,16 @@ export default class UserResolver implements IUserResolver {
 
     private constructor() {
         this.createUser = this.createUser;
+        this.login = this.login;
+        this.getUser = this.getUser;
     }
 
     async createUser({ user }: { user: IUserInput }): Promise<IUser> {
-        const valideUser = await UserValidate.validate(user);
+        const validUser = await UserValidate.validate(user);
 
-        valideUser.password = await bcrypt.hash(valideUser.password, 12);
+        validUser.password = await bcrypt.hash(validUser.password, 12);
 
-        const savedUser = await new UserModel(valideUser).save();
+        const savedUser = await new UserModel(validUser).save();
         return { ...parseUser(savedUser) };
     }
 
@@ -45,5 +48,15 @@ export default class UserResolver implements IUserResolver {
             { expiresIn: '1h' }
         );
         return { ...parseUser(user), token };
+    }
+
+    async getUser(_: any, request: Request): Promise<IUser> {
+        const req: Req = <Req>request;
+        if (!req.validUser.isValid) throw new Error('You are Not a valid user');
+
+        const user = await UserModel.findById(req.validUser.userId).select('-password');
+        if (!user) throw new Error('User Not Found');
+
+        return parseUser(user);
     }
 }

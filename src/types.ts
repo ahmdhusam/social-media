@@ -1,13 +1,13 @@
 import type { Request } from 'express';
 
-export interface ValideUser {
-    isValide: boolean;
+export interface ValidUser {
+    isValid: boolean;
     userId?: string;
     email?: string;
 }
 
 export interface Req extends Request {
-    valideUser: ValideUser;
+    validUser: ValidUser;
 }
 
 export type GetUser = (userId: string) => Promise<IUser>;
