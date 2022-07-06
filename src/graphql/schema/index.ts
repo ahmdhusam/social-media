@@ -5,6 +5,7 @@ export default buildSchema(`
     type Tweet {
         id:ID!
         content:String!
+        replys:[Tweet!]!
         creator:User!
     }
 

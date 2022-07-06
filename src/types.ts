@@ -17,6 +17,7 @@ export type GetTweets = (tweetsId: string[]) => Promise<ITweet[]>;
 export interface ITweet {
     id: string;
     content: string;
+    replys: GetTweets;
     creator: GetUser;
 }
 
