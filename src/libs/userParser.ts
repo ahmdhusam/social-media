@@ -2,10 +2,14 @@ import type { GetUsers, GetUser } from '../types';
 
 import UserModel from '../models/userModel';
 
+// Libs
+import { parseTweets } from './tweetParser';
+
 export function parseUser(user: any) {
     return {
         ...user._doc,
         id: user.id,
+        tweets: parseTweets.bind(null, user._doc.tweets),
         friends: getUsers.bind(null, user._doc.friends)
     };
 }
@@ -15,4 +19,12 @@ const getUsers: GetUsers = async (usersId: string[]) => {
         '-password'
     );
     return users.map(user => parseUser(user));
+};
+
+export const getUser: GetUser = async (userId: string) => {
+    const user = await UserModel.findById(userId).select('-_d');
+    if (!user) {
+        throw new Error('User Not Found');
+    }
+    return parseUser(user);
 };
