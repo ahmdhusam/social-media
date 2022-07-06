@@ -1,6 +1,7 @@
-import type { IUser, IUserInput, IUserResolver } from '../types';
+import type { ILoginInput, IReturnUser, IUser, IUserInput, IUserResolver } from '../types';
 
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 import UserModel from '../models/userModel';
 
@@ -29,5 +30,20 @@ export default class UserResolver implements IUserResolver {
 
         const savedUser = await new UserModel(valideUser).save();
         return { ...parseUser(savedUser) };
+    }
+
+    async login({ loginContent }: { loginContent: ILoginInput }): Promise<IReturnUser> {
+        const user = await UserModel.findOne({ email: loginContent.email });
+        if (!user) throw new Error('User Not Exist!');
+
+        const isValid = await bcrypt.compare(loginContent.password, user.password);
+        if (!isValid) throw new Error('Password incorrect');
+
+        const token = jwt.sign(
+            { userId: user.id, email: loginContent.email },
+            <string>process.env.SECRET_KEY,
+            { expiresIn: '1h' }
+        );
+        return { ...parseUser(user), token };
     }
 }
