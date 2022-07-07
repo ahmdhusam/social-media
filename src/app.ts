@@ -10,11 +10,11 @@ import { graphqlHTTP } from 'express-graphql';
 import mongoose from 'mongoose';
 
 // midllewares
-import auth from './midlleware/auth';
+import { auth } from './midlleware';
 
 // GraphQL
-import graphQLSchema from './graphql/schema';
-import graphQLResolver from './graphql/resolver';
+import { graphQLSchema, graphQLResolver } from './graphql';
+
 const app = express();
 
 const limiter = rateLimit({

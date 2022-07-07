@@ -1,14 +1,11 @@
 import type { GetTweets } from '../types';
 
-import TweetModel from '../models/tweetModel';
+import { TweetModel } from '../models';
 
-// Libs
-import { getUser } from './userParser';
+import { getUser } from '.';
 
 export const parseTweets: GetTweets = async (tweetsId: string[]) => {
-    const tweets = await TweetModel.find({ _id: { $in: tweetsId } }).select(
-        '-_id'
-    );
+    const tweets = await TweetModel.find({ _id: { $in: tweetsId } }).select('-_id');
 
     return tweets.map((tweet: any) => ({
         ...tweet._doc,

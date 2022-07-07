@@ -1,5 +1,4 @@
-import UserResolver from '../controllers/userResolver';
-import TweetResolver from '../controllers/tweetResolver';
+import { UserResolver, TweetResolver } from '../controllers';
 
 export default {
     ...UserResolver.getInstance,

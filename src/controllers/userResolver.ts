@@ -4,11 +4,9 @@ import type { ILoginInput, IReturnUser, IUser, IUserInput, IUserResolver, Req } 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-import UserModel from '../models/userModel';
+import { UserModel } from '../models';
 
-// Libs
-import { UserValidate } from '../libs/validator';
-import { parseUser } from '../libs/userParser';
+import { UserValidate, parseUser } from '../libs';
 
 export default class UserResolver implements IUserResolver {
     private static instance: UserResolver;
