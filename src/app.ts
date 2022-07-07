@@ -12,9 +12,9 @@ import mongoose from 'mongoose';
 // midllewares
 import auth from './midlleware/auth';
 
-// GraphQL Schema
+// GraphQL
 import graphQLSchema from './graphql/schema';
-
+import graphQLResolver from './graphql/resolver';
 const app = express();
 
 const limiter = rateLimit({
@@ -42,7 +42,7 @@ app.use(
     '/graphql',
     graphqlHTTP({
         schema: graphQLSchema,
-        rootValue: {},
+        rootValue: graphQLResolver,
         graphiql: true,
         customFormatErrorFn: err => {
             return err;
