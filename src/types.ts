@@ -7,7 +7,7 @@ export interface ValidUser {
 }
 
 export interface Req extends Request {
-    validUser: ValidUser;
+    User: ValidUser;
 }
 
 export type GetUser = (userId: string) => Promise<IUser>;
@@ -55,11 +55,11 @@ export interface ITweetInput {
 export interface IUserResolver {
     createUser(ctx: { user: IUserInput }): Promise<IUser>;
     login(ctx: { loginContent: ILoginInput }): Promise<IReturnUser>;
-    getUser(_: any, req: Request): Promise<IUser>;
+    getUser(_: any, request: Request): Promise<IUser>;
 }
 
 export interface ITweetResolver {
-    createTweet(tweet: ITweetInput): Promise<ITweet>;
-    getTweet(): Promise<ITweet>;
-    getTimeline(): Promise<ITweet>[];
+    createTweet(ctx: { tweet: ITweetInput }, request: Request): Promise<ITweet>;
+    getTweet(_: any, request: Request): Promise<ITweet>;
+    getTimeline(_: any, request: Request): Promise<ITweet[]>;
 }

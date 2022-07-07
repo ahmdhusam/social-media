@@ -30,7 +30,8 @@ export default class UserResolver implements IUserResolver {
         validUser.password = await bcrypt.hash(validUser.password, 12);
 
         const savedUser = await new UserModel(validUser).save();
-        return { ...parseUser(savedUser) };
+        const { password, ...rest } = parseUser(savedUser);
+        return rest;
     }
 
     async login({ loginContent }: { loginContent: ILoginInput }): Promise<IReturnUser> {
@@ -45,14 +46,15 @@ export default class UserResolver implements IUserResolver {
             <string>process.env.SECRET_KEY,
             { expiresIn: '1h' }
         );
-        return { ...parseUser(user), token };
+        const { password, ...rest } = parseUser(user);
+        return { ...rest, token };
     }
 
     async getUser(_: any, request: Request): Promise<IUser> {
         const req: Req = <Req>request;
-        if (!req.validUser.isValid) throw new Error('You are Not a valid user');
+        if (!req.User.isValid) throw new Error('You are Not a valid user');
 
-        const user = await UserModel.findById(req.validUser.userId).select('-password');
+        const user = await UserModel.findById(req.User.userId).select('-password');
         if (!user) throw new Error('User Not Found');
 
         return parseUser(user);

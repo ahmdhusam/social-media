@@ -2,13 +2,13 @@ import type { GetUsers, GetUser } from '../types';
 
 import { UserModel } from '../models';
 
-import { parseTweets } from '.';
+import { getTweets } from '.';
 
 export function parseUser(user: any) {
     return {
         ...user._doc,
         id: user.id,
-        tweets: parseTweets.bind(null, user._doc.tweets),
+        tweets: getTweets.bind(null, user._doc.tweets),
         friends: getUsers.bind(null, user._doc.friends)
     };
 }
@@ -23,5 +23,5 @@ export const getUser: GetUser = async (userId: string) => {
 
 const getUsers: GetUsers = async (usersId: string[]) => {
     const users = await UserModel.find({ _id: { $in: usersId } }).select('-password');
-    return users.map(user => parseUser(user));
+    return users.map(parseUser);
 };

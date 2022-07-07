@@ -1,9 +1,9 @@
 import * as Yup from 'yup';
 
 export const UserValidate = Yup.object().shape({
-    password: Yup.string().required().trim().min(8).max(200),
-    email: Yup.string().required().trim().min(5).max(200).email(),
-    userName: Yup.string().required().trim().min(4).max(50),
+    password: Yup.string().lowercase().required().trim().min(8).max(200),
+    email: Yup.string().lowercase().required().trim().min(5).max(200).email(),
+    userName: Yup.string().lowercase().required().trim().min(4).max(50),
     lastName: Yup.string().required().trim().min(5).max(200),
     firstName: Yup.string().required().trim().min(5).max(200)
 });
