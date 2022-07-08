@@ -60,6 +60,6 @@ export interface IUserResolver {
 
 export interface ITweetResolver {
     createTweet(ctx: { tweet: ITweetInput }, request: Request): Promise<ITweet>;
-    getTweet(_: any, request: Request): Promise<ITweet>;
+    getTweet(ctx: { tweetId: string }, request: Request): Promise<ITweet>;
     getTimeline(_: any, request: Request): Promise<ITweet[]>;
 }

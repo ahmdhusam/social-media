@@ -17,11 +17,12 @@ export default class TweetResolver implements ITweetResolver {
 
     private constructor() {
         this.createTweet = this.createTweet;
+        this.getTweet = this.getTweet;
     }
 
     async createTweet({ tweet }: { tweet: ITweetInput }, request: Request): Promise<ITweet> {
         const req: Req = <Req>request;
-        if (!req.User.isValid) throw new Error('You are Not a valid user');
+        if (!req.User.isValid) throw new Error('Not authenticated.');
 
         const user = await UserModel.findById(req.User.userId).select('-password');
         if (!user) throw new Error('User Not Found');
@@ -38,8 +39,15 @@ export default class TweetResolver implements ITweetResolver {
 
         return parseTweet(newTweet);
     }
-    async getTweet(): Promise<ITweet> {
-        throw new Error('Method not implemented.');
+
+    async getTweet({ tweetId }: { tweetId: string }, request: Request): Promise<ITweet> {
+        const req: Req = <Req>request;
+        if (!req.User.isValid) throw new Error('Not authenticated.');
+
+        const tweet = await TweetModel.findById(tweetId);
+        if (!tweet) throw new Error('Not Found 404');
+
+        return parseTweet(tweet);
     }
     async getTimeline(): Promise<ITweet[]> {
         throw new Error('Method not implemented.');

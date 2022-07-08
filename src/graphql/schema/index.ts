@@ -50,7 +50,7 @@ export default buildSchema(`
     type RootQuery {
         login(loginContent: LoginInput!): returnUser!
         getUser: User!
-        getTweet: Tweet!
+        getTweet(tweetId: ID!): Tweet!
         getTimeline: [Tweet!]!
     }
 

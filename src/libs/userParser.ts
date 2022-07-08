@@ -14,7 +14,7 @@ export function parseUser(user: any) {
 }
 
 export const getUser: GetUser = async (userId: string) => {
-    const user = await UserModel.findById(userId).select('-_d');
+    const user = await UserModel.findById(userId).select('-password');
     if (!user) {
         throw new Error('User Not Found');
     }

@@ -52,7 +52,7 @@ export default class UserResolver implements IUserResolver {
 
     async getUser(_: any, request: Request): Promise<IUser> {
         const req: Req = <Req>request;
-        if (!req.User.isValid) throw new Error('You are Not a valid user');
+        if (!req.User.isValid) throw new Error('Not authenticated.');
 
         const user = await UserModel.findById(req.User.userId).select('-password');
         if (!user) throw new Error('User Not Found');
