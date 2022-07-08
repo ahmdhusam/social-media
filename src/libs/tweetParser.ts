@@ -5,7 +5,7 @@ import { TweetModel } from '../models';
 import { getUser } from '.';
 
 export const getTweets: GetTweets = async (tweetsId: string[]) => {
-    const tweets = await TweetModel.find({ _id: { $in: tweetsId } }).select('-_id');
+    const tweets = await TweetModel.find({ _id: { $in: tweetsId } });
 
     return tweets.map(parseTweet);
 };
