@@ -22,6 +22,7 @@ export default class UserResolver implements IUserResolver {
         this.createUser = this.createUser;
         this.login = this.login;
         this.getUser = this.getUser;
+        this.follow = this.follow;
     }
 
     async createUser({ user }: { user: IUserInput }): Promise<IUser> {
@@ -56,6 +57,24 @@ export default class UserResolver implements IUserResolver {
 
         const user = await UserModel.findById(req.User.userId).select('-password');
         if (!user) throw new Error('User Not Found');
+
+        return parseUser(user);
+    }
+    async follow({ userId }: { userId: string }, request: Request): Promise<IUser> {
+        const { User }: Req = <Req>request;
+        if (!User.isValid) throw new Error('Not authenticated');
+
+        const [user, following] = await Promise.all([
+            UserModel.findById(User.userId),
+            UserModel.findById(userId)
+        ]);
+        if (!user || !following) throw new Error('user Not Found');
+
+        if (user.following.includes(following.id)) throw new Error('already following');
+
+        user.following.push(following.toObject());
+        following.followers.push(user.toObject());
+        await Promise.all([user.save(), following.save()]);
 
         return parseUser(user);
     }

@@ -16,10 +16,11 @@ export default buildSchema(`
         userName: String!
         email: String!
         tweets: [Tweet!]!
-        friends: [User!]!
+        following: [User!]!
+        followers: [User!]!
     }
 
-    type returnUser {
+    type UserToken {
         id: ID!
         token:String!
         firstName: String!
@@ -27,7 +28,8 @@ export default buildSchema(`
         userName: String!
         email: String!
         tweets: [Tweet!]!
-        friends: [User!]!
+        following: [User!]!
+        followers: [User!]!
     }
 
     input LoginInput {
@@ -48,7 +50,7 @@ export default buildSchema(`
     }
 
     type RootQuery {
-        login(loginContent: LoginInput!): returnUser!
+        login(loginContent: LoginInput!): UserToken!
         getUser: User!
         getTweet(tweetId: ID!): Tweet!
         getTimeline: [Tweet!]!
@@ -57,6 +59,7 @@ export default buildSchema(`
     type RootMutation {
         createUser(user: UserInput!): User!
         createTweet(tweet: TweetInput!): Tweet!
+        follow(userId:ID!):User!
     }
 
     schema {

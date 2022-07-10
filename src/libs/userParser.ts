@@ -9,7 +9,8 @@ export function parseUser(user: any) {
         ...user._doc,
         id: user.id,
         tweets: getTweets.bind(null, user._doc.tweets),
-        friends: getUsers.bind(null, user._doc.friends)
+        following: getUsers.bind(null, user._doc.following),
+        followers: getUsers.bind(null, user._doc.followers)
     };
 }
 

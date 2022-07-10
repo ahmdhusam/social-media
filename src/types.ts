@@ -28,7 +28,8 @@ export interface IUser {
     userName: string;
     email: string;
     tweets: GetTweets;
-    friends: GetUsers;
+    following: GetUsers;
+    followers: GetUsers;
 }
 
 export interface IReturnUser extends IUser {
@@ -56,6 +57,7 @@ export interface IUserResolver {
     createUser(ctx: { user: IUserInput }): Promise<IUser>;
     login(ctx: { loginContent: ILoginInput }): Promise<IReturnUser>;
     getUser(_: any, request: Request): Promise<IUser>;
+    follow(ctx: { userId: string }, request: Request): Promise<IUser>;
 }
 
 export interface ITweetResolver {

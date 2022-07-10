@@ -30,7 +30,14 @@ const userSchema = new Schema(
                 ref: 'Tweet'
             }
         ],
-        friends: [
+        following: [
+            {
+                type: Schema.Types.ObjectId,
+                required: true,
+                ref: 'User'
+            }
+        ],
+        followers: [
             {
                 type: Schema.Types.ObjectId,
                 required: true,
