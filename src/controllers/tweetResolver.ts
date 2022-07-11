@@ -18,6 +18,7 @@ export default class TweetResolver implements ITweetResolver {
     private constructor() {
         this.createTweet = this.createTweet;
         this.getTweet = this.getTweet;
+        this.getTimeline = this.getTimeline;
     }
 
     async createTweet({ tweet }: { tweet: ITweetInput }, request: Request): Promise<ITweet> {
@@ -49,7 +50,17 @@ export default class TweetResolver implements ITweetResolver {
 
         return parseTweet(tweet);
     }
-    async getTimeline(): Promise<ITweet[]> {
-        throw new Error('Method not implemented.');
+    async getTimeline(_: any, request: Request): Promise<ITweet[]> {
+        const { User }: Req = <Req>request;
+        if (!User.isValid) throw new Error('Not authenticated.');
+
+        const user = await UserModel.findById(User.userId);
+        if (!user) throw new Error('User Not Found');
+
+        const timelineTweets = await TweetModel.find({
+            $or: [{ creator: { $in: user.following } }, { creator: user }]
+        }).sort({ updatedAt: -1 });
+
+        return timelineTweets.map(t => parseTweet(t));
     }
 }
