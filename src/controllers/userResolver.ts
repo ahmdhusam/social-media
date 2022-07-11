@@ -23,6 +23,7 @@ export default class UserResolver implements IUserResolver {
         this.login = this.login;
         this.getUser = this.getUser;
         this.follow = this.follow;
+        this.unfollow = this.unfollow;
     }
 
     async createUser({ user }: { user: IUserInput }): Promise<IUser> {
@@ -60,6 +61,7 @@ export default class UserResolver implements IUserResolver {
 
         return parseUser(user);
     }
+
     async follow({ userId }: { userId: string }, request: Request): Promise<IUser> {
         const { User }: Req = <Req>request;
         if (!User.isValid) throw new Error('Not authenticated');
@@ -74,6 +76,25 @@ export default class UserResolver implements IUserResolver {
 
         user.following.push(following.toObject());
         following.followers.push(user.toObject());
+        await Promise.all([user.save(), following.save()]);
+
+        return parseUser(user);
+    }
+
+    async unfollow({ userId }: { userId: string }, request: Request): Promise<IUser> {
+        const { User }: Req = <Req>request;
+        if (!User.isValid) throw new Error('Not authenticated');
+
+        const [user, following] = await Promise.all([
+            UserModel.findById(User.userId),
+            UserModel.findById(userId)
+        ]);
+        if (!user || !following) throw new Error('user Not Found');
+
+        // if (!user.following.includes(following.id)) throw new Error('already unfollowed');
+
+        user.following.pull(following.toObject());
+        following.followers.pull(user.toObject());
         await Promise.all([user.save(), following.save()]);
 
         return parseUser(user);

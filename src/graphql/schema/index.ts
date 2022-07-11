@@ -60,6 +60,7 @@ export default buildSchema(`
         createUser(user: UserInput!): User!
         createTweet(tweet: TweetInput!): Tweet!
         follow(userId:ID!):User!
+        unfollow(userId:ID!):User!
     }
 
     schema {

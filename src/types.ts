@@ -58,6 +58,7 @@ export interface IUserResolver {
     login(ctx: { loginContent: ILoginInput }): Promise<IReturnUser>;
     getUser(_: any, request: Request): Promise<IUser>;
     follow(ctx: { userId: string }, request: Request): Promise<IUser>;
+    unfollow(ctx: { userId: string }, request: Request): Promise<IUser>;
 }
 
 export interface ITweetResolver {
