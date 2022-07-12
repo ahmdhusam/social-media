@@ -1,9 +1,10 @@
 import type { Request } from 'express';
-import type { ITweet, ITweetInput, ITweetResolver, Req } from '../types';
+import type { IReplyInput, ITweet, ITweetInput, ITweetResolver, Req } from '../types';
 
 import { TweetModel, UserModel } from '../models';
 
 import { parseTweet, TweetValidate } from '../libs';
+import { ReplyValidate } from '../libs/validator';
 
 export default class TweetResolver implements ITweetResolver {
     private static instance: TweetResolver;
@@ -19,6 +20,7 @@ export default class TweetResolver implements ITweetResolver {
         this.createTweet = this.createTweet;
         this.getTweet = this.getTweet;
         this.getTimeline = this.getTimeline;
+        this.addReply = this.addReply;
     }
 
     async createTweet({ tweet }: { tweet: ITweetInput }, request: Request): Promise<ITweet> {
@@ -50,6 +52,7 @@ export default class TweetResolver implements ITweetResolver {
 
         return parseTweet(tweet);
     }
+
     async getTimeline(_: any, request: Request): Promise<ITweet[]> {
         const { User }: Req = <Req>request;
         if (!User.isValid) throw new Error('Not authenticated.');
@@ -62,5 +65,25 @@ export default class TweetResolver implements ITweetResolver {
         }).sort({ updatedAt: -1 });
 
         return timelineTweets.map(t => parseTweet(t));
+    }
+
+    async addReply({ reply }: { reply: IReplyInput }, request: Request): Promise<ITweet[]> {
+        const { User }: Req = <Req>request;
+        if (!User.isValid) throw new Error('Not authenticated.');
+
+        const valideReply = await ReplyValidate.validate(reply);
+
+        const parentTweet = await TweetModel.findById(valideReply.tweetId);
+        if (!parentTweet) throw new Error('Tweet Not Found 404');
+
+        const newReply = await new TweetModel({
+            content: valideReply.content,
+            creator: User.userId
+        }).save();
+
+        parentTweet.replys.push(newReply.id);
+        await parentTweet.save();
+
+        return parseTweet(parentTweet);
     }
 }

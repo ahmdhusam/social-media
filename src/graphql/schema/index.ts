@@ -49,6 +49,11 @@ export default buildSchema(`
         content:String!
     }
 
+    input ReplyInput {
+        tweetId: ID!
+        content: String!
+    }
+
     type RootQuery {
         login(loginContent: LoginInput!): UserToken!
         getUser(userName:String!): User!
@@ -59,8 +64,9 @@ export default buildSchema(`
     type RootMutation {
         createUser(user: UserInput!): User!
         createTweet(tweet: TweetInput!): Tweet!
-        follow(userId:ID!):User!
-        unfollow(userId:ID!):User!
+        follow(userId: ID!): User!
+        unfollow(userId: ID!): User!
+        addReply(reply: ReplyInput): Tweet!
     }
 
     schema {

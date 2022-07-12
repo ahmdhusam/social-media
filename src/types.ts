@@ -53,6 +53,11 @@ export interface ITweetInput {
     content: string;
 }
 
+export interface IReplyInput {
+    tweetId: string;
+    content: string;
+}
+
 export interface IUserResolver {
     createUser(ctx: { user: IUserInput }): Promise<IUser>;
     login(ctx: { loginContent: ILoginInput }): Promise<IReturnUser>;
@@ -65,4 +70,5 @@ export interface ITweetResolver {
     createTweet(ctx: { tweet: ITweetInput }, request: Request): Promise<ITweet>;
     getTweet(ctx: { tweetId: string }, request: Request): Promise<ITweet>;
     getTimeline(_: any, request: Request): Promise<ITweet[]>;
+    addReply(ctx: { reply: IReplyInput }, request: Request): Promise<ITweet[]>;
 }

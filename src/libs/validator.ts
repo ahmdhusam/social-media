@@ -11,3 +11,8 @@ export const UserValidate = Yup.object().shape({
 export const TweetValidate = Yup.object().shape({
     content: Yup.string().required().trim().min(1).max(150)
 });
+
+export const ReplyValidate = Yup.object().shape({
+    content: Yup.string().required().trim().min(1).max(150),
+    tweetId: Yup.string().required().trim().length(24)
+});
