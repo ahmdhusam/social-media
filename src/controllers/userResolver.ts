@@ -85,17 +85,17 @@ export default class UserResolver implements IUserResolver {
         const { User }: Req = <Req>request;
         if (!User.isValid) throw new Error('Not authenticated');
 
-        const [user, following] = await Promise.all([
+        const [user, followedUser] = await Promise.all([
             UserModel.findById(User.userId),
             UserModel.findById(userId)
         ]);
-        if (!user || !following) throw new Error('user Not Found');
+        if (!user || !followedUser) throw new Error('user Not Found');
+        if (!user.following.includes(followedUser.id) && !followedUser.followers.includes(user.id))
+            throw new Error('already unfollowed');
 
-        // if (!user.following.includes(following.id)) throw new Error('already unfollowed');
-
-        user.following.pull(following.toObject());
-        following.followers.pull(user.toObject());
-        await Promise.all([user.save(), following.save()]);
+        (user as any).following.pull(followedUser);
+        (followedUser as any).followers.pull(user);
+        await Promise.all([user.save(), followedUser.save()]);
 
         return parseUser(user);
     }
