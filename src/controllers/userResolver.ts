@@ -52,12 +52,12 @@ export default class UserResolver implements IUserResolver {
         return { ...rest, token };
     }
 
-    async getUser(_: any, request: Request): Promise<IUser> {
+    async getUser({ userName }: { userName: string }, request: Request): Promise<IUser> {
         const req: Req = <Req>request;
         if (!req.User.isValid) throw new Error('Not authenticated.');
 
-        const user = await UserModel.findById(req.User.userId).select('-password');
-        if (!user) throw new Error('User Not Found');
+        const user = await UserModel.findOne({ userName }).select('-password');
+        if (!user) throw new Error('User Not Found 404');
 
         return parseUser(user);
     }
