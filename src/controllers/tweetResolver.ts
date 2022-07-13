@@ -21,6 +21,8 @@ export default class TweetResolver implements ITweetResolver {
         this.getTweet = this.getTweet;
         this.getTimeline = this.getTimeline;
         this.addReply = this.addReply;
+        this.retweet = this.retweet;
+        this.deleteTweet = this.deleteTweet;
     }
 
     async createTweet({ tweet }: { tweet: ITweetInput }, request: Request): Promise<ITweet> {
@@ -85,5 +87,29 @@ export default class TweetResolver implements ITweetResolver {
         await parentTweet.save();
 
         return parseTweet(parentTweet);
+    }
+
+    async retweet({ tweetId }: { tweetId: string }, request: Request): Promise<ITweet> {
+        const { User }: Req = <Req>request;
+        if (!User.isValid) throw new Error('Not authenticated.');
+
+        const [user, tweet] = await Promise.all([
+            UserModel.findById(User.userId).select('-password'),
+            TweetModel.findById(tweetId)
+        ]).catch(_ => {
+            throw new Error('tweet id not valid');
+        });
+        if (!user || !tweet) throw new Error('Not Found 404');
+
+        if (user.tweets.includes(tweet.id)) return parseTweet(tweet);
+
+        user.tweets.push(tweet.id);
+        await user.save();
+
+        return parseTweet(tweet);
+    }
+
+    async deleteTweet(_ctx: { tweetId: string }, _request: Request): Promise<ITweet> {
+        throw new Error('Method not implemented.');
     }
 }

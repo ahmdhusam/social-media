@@ -67,6 +67,8 @@ export default buildSchema(`
         follow(userId: ID!): User!
         unfollow(userId: ID!): User!
         addReply(reply: ReplyInput): Tweet!
+        retweet(tweetId: ID!): Tweet!
+        deleteTweet(tweetId: ID!): Tweet!
     }
 
     schema {

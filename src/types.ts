@@ -71,4 +71,6 @@ export interface ITweetResolver {
     getTweet(ctx: { tweetId: string }, request: Request): Promise<ITweet>;
     getTimeline(_: any, request: Request): Promise<ITweet[]>;
     addReply(ctx: { reply: IReplyInput }, request: Request): Promise<ITweet[]>;
+    retweet(ctx: { tweetId: string }, request: Request): Promise<ITweet>;
+    deleteTweet(ctx: { tweetId: string }, request: Request): Promise<ITweet>;
 }
