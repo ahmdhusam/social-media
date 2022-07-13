@@ -75,16 +75,20 @@ export default class TweetResolver implements ITweetResolver {
 
         const valideReply = await ReplyValidate.validate(reply);
 
-        const parentTweet = await TweetModel.findById(valideReply.tweetId);
-        if (!parentTweet) throw new Error('Tweet Not Found 404');
+        const [user, parentTweet] = await Promise.all([
+            UserModel.findById(User.userId),
+            TweetModel.findById(valideReply.tweetId)
+        ]);
+        if (!user || !parentTweet) throw new Error('Not Found 404');
 
         const newReply = await new TweetModel({
             content: valideReply.content,
-            creator: User.userId
+            creator: user
         }).save();
 
+        user.tweets.push(newReply.id);
         parentTweet.replys.push(newReply.id);
-        await parentTweet.save();
+        await Promise.all([user.save(), parentTweet.save()]);
 
         return parseTweet(parentTweet);
     }
