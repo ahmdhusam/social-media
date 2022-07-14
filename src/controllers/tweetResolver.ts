@@ -3,8 +3,7 @@ import type { IReplyInput, ITweet, ITweetInput, ITweetResolver, Req } from '../t
 
 import { TweetModel, UserModel } from '../models';
 
-import { parseTweet, TweetValidate } from '../libs';
-import { ReplyValidate } from '../libs/validator';
+import { parseTweet, TweetValidate, ReplyValidate } from '../libs';
 
 export default class TweetResolver implements ITweetResolver {
     private static instance: TweetResolver;

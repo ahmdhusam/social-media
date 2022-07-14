@@ -16,3 +16,8 @@ export const ReplyValidate = Yup.object().shape({
     content: Yup.string().required().trim().min(1).max(150),
     tweetId: Yup.string().required().trim().length(24)
 });
+
+export const changePasswordValidate = Yup.object().shape({
+    newPassword: Yup.string().required().trim().min(8).max(200),
+    oldPassword: Yup.string().required().trim().min(8).max(200)
+});

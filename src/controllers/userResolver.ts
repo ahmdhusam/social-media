@@ -1,12 +1,20 @@
 import type { Request } from 'express';
-import type { ILoginInput, IReturnUser, IUser, IUserInput, IUserResolver, Req } from '../types';
+import type {
+    ILoginInput,
+    IUserToken,
+    IUser,
+    IUserInput,
+    IUserResolver,
+    Req,
+    IChangePasswordInput
+} from '../types';
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { UserModel } from '../models';
 
-import { UserValidate, parseUser } from '../libs';
+import { UserValidate, parseUser, changePasswordValidate } from '../libs';
 
 export default class UserResolver implements IUserResolver {
     private static instance: UserResolver;
@@ -24,6 +32,7 @@ export default class UserResolver implements IUserResolver {
         this.getUser = this.getUser;
         this.follow = this.follow;
         this.unfollow = this.unfollow;
+        this.changePassword = this.changePassword;
     }
 
     async createUser({ user }: { user: IUserInput }): Promise<IUser> {
@@ -36,7 +45,7 @@ export default class UserResolver implements IUserResolver {
         return rest;
     }
 
-    async login({ loginContent }: { loginContent: ILoginInput }): Promise<IReturnUser> {
+    async login({ loginContent }: { loginContent: ILoginInput }): Promise<IUserToken> {
         const user = await UserModel.findOne({ email: loginContent.email });
         if (!user) throw new Error('User Not Exist!');
 
@@ -98,5 +107,26 @@ export default class UserResolver implements IUserResolver {
         await Promise.all([user.save(), followedUser.save()]);
 
         return parseUser(user);
+    }
+
+    async changePassword(
+        { passwords }: { passwords: IChangePasswordInput },
+        request: Request
+    ): Promise<IUser> {
+        const { User }: Req = <Req>request;
+        if (!User.isValid) throw new Error('Not authenticated');
+
+        const user = await UserModel.findById(User.userId);
+        if (!user) throw new Error('user Not Found 404');
+        const validPassword = await changePasswordValidate.validate(passwords);
+
+        const isValid = await bcrypt.compare(validPassword.oldPassword, user.password);
+        if (!isValid) throw new Error('Password incorrect');
+
+        user.password = await bcrypt.hash(passwords.newPassword, 12);
+        await user.save();
+
+        const { password, ...rest } = parseUser(user);
+        return rest;
     }
 }

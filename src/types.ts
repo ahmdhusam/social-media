@@ -32,7 +32,7 @@ export interface IUser {
     followers: GetUsers;
 }
 
-export interface IReturnUser extends IUser {
+export interface IUserToken extends IUser {
     token: string;
 }
 
@@ -58,12 +58,18 @@ export interface IReplyInput {
     content: string;
 }
 
+export interface IChangePasswordInput {
+    oldPassword: string;
+    newPassword: string;
+}
+
 export interface IUserResolver {
     createUser(ctx: { user: IUserInput }): Promise<IUser>;
-    login(ctx: { loginContent: ILoginInput }): Promise<IReturnUser>;
+    login(ctx: { loginContent: ILoginInput }): Promise<IUserToken>;
     getUser(ctx: { userName: string }, request: Request): Promise<IUser>;
     follow(ctx: { userId: string }, request: Request): Promise<IUser>;
     unfollow(ctx: { userId: string }, request: Request): Promise<IUser>;
+    changePassword(ctx: { passwords: IChangePasswordInput }, request: Request): Promise<IUser>;
 }
 
 export interface ITweetResolver {

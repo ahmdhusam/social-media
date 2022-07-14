@@ -54,6 +54,11 @@ export default buildSchema(`
         content: String!
     }
 
+    input ChangePasswordInput {
+        oldPassword: String!
+        newPassword: String!
+    }
+
     type RootQuery {
         login(loginContent: LoginInput!): UserToken!
         getUser(userName:String!): User!
@@ -69,6 +74,7 @@ export default buildSchema(`
         addReply(reply: ReplyInput): Tweet!
         retweet(tweetId: ID!): Tweet!
         deleteTweet(tweetId: ID!): Tweet!
+        changePassword(passwords: ChangePasswordInput!): User!
     }
 
     schema {
