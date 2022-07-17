@@ -1,6 +1,9 @@
 import type { Request } from 'express';
 import type { IReplyInput, ITweet, ITweetInput, ITweetResolver, Req } from '../types';
 
+import { join } from 'path';
+import { fork } from 'child_process';
+
 import { TweetModel, UserModel } from '../models';
 
 import { parseTweet, TweetValidate, ReplyValidate } from '../libs';
@@ -112,7 +115,29 @@ export default class TweetResolver implements ITweetResolver {
         return parseTweet(tweet);
     }
 
-    async deleteTweet(_ctx: { tweetId: string }, _request: Request): Promise<ITweet> {
-        throw new Error('Method not implemented.');
+    async deleteTweet({ tweetId }: { tweetId: string }, request: Request): Promise<ITweet> {
+        const { User }: Req = <Req>request;
+        if (!User.isValid) throw new Error('Not authenticated.');
+
+        const [user, tweet] = await Promise.all([
+            UserModel.findById(User.userId).select('-password'),
+            TweetModel.findById(tweetId)
+        ]).catch(_ => {
+            throw new Error('tweet id Not Valid');
+        });
+        if (!user || !tweet) throw new Error('Not Found 404');
+
+        if (tweet.creator.toString() !== user.id) throw new Error('Not authorization');
+
+        const deleteFork = fork(join(__dirname, '..', 'libs', 'deleteReplys.js'));
+        deleteFork.send({ tweet });
+        deleteFork.on('exit', async () => {
+            await Promise.all([
+                TweetModel.updateOne({ replys: tweet.id }, { $pull: { replys: tweet.id } }),
+                tweet.delete()
+            ]);
+        });
+
+        return parseTweet(tweet);
     }
 }
