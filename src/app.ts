@@ -3,7 +3,7 @@ import path from 'path';
 
 import express, { NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
-// import helmet from 'helmet';
+import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import { graphqlHTTP } from 'express-graphql';
@@ -16,6 +16,7 @@ import { auth } from './midlleware';
 import { graphQLSchema, graphQLResolver } from './graphql';
 
 const app = express();
+const __isProd__ = process.env.NODE_ENV === 'production';
 
 const limiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 60 minutes
@@ -30,7 +31,7 @@ const fileStream = fs.createWriteStream(path.join(__dirname, 'log.log'), {
 
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
-// app.use(helmet());
+app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(morgan('tiny', { stream: fileStream }));
@@ -43,7 +44,7 @@ app.use(
     graphqlHTTP({
         schema: graphQLSchema,
         rootValue: graphQLResolver,
-        graphiql: true,
+        graphiql: !__isProd__,
         customFormatErrorFn: err => {
             return err;
         }
@@ -59,13 +60,16 @@ app.use((error: any, _: Request, res: Response, _1: NextFunction) => {
     res.status(505).json({ message: error.message });
 });
 
-const PORT = process.env.PORT ?? 5500;
-(async function main() {
-    await mongoose
-        .connect(typeof process.env.DBURL === 'string' ? process.env.DBURL : '')
-        .catch(err => console.log('DBError', err));
+(function main() {
+    const { DBURL, PORT = 3300 } = process.env;
 
-    app.listen(PORT, () => {
-        console.log('Server running on ', PORT);
-    });
+    typeof DBURL === 'string' &&
+        mongoose
+            .connect(DBURL)
+            .then(() => {
+                app.listen(PORT, () => {
+                    console.log('Server running on ', PORT);
+                });
+            })
+            .catch(err => console.error('DBError:', err.message));
 })();
