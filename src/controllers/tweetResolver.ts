@@ -4,7 +4,7 @@ import type { IReplyInput, ITweet, ITweetInput, ITweetResolver, Req } from '../t
 import { join } from 'path';
 import { fork } from 'child_process';
 
-import { TweetModel, UserModel } from '../models';
+import { TweetModel } from '../models';
 
 import { parseTweet, TweetValidate, ReplyValidate } from '../libs';
 
@@ -28,28 +28,25 @@ export default class TweetResolver implements ITweetResolver {
     }
 
     async createTweet({ tweet }: { tweet: ITweetInput }, request: Request): Promise<ITweet> {
-        const req: Req = <Req>request;
-        if (!req.User.isValid) throw new Error('Not authenticated.');
-
-        const user = await UserModel.findById(req.User.userId).select('-password');
-        if (!user) throw new Error('User Not Found');
+        const { User }: Req = <Req>request;
+        if (!User) throw new Error('Not authenticated.');
 
         const validTweet = await TweetValidate.validate(tweet);
 
         const newTweet = await new TweetModel({
             content: validTweet.content,
-            creator: user
+            creator: User
         }).save();
 
-        user.tweets.push(newTweet.toObject());
-        await user.save();
+        User.tweets.push(newTweet.toObject());
+        await User.save();
 
         return parseTweet(newTweet);
     }
 
     async getTweet({ tweetId }: { tweetId: string }, request: Request): Promise<ITweet> {
-        const req: Req = <Req>request;
-        if (!req.User.isValid) throw new Error('Not authenticated.');
+        const { User }: Req = <Req>request;
+        if (!User) throw new Error('Not authenticated.');
 
         const tweet = await TweetModel.findById(tweetId);
         if (!tweet) throw new Error('Not Found 404');
@@ -59,13 +56,10 @@ export default class TweetResolver implements ITweetResolver {
 
     async getTimeline(_: any, request: Request): Promise<ITweet[]> {
         const { User }: Req = <Req>request;
-        if (!User.isValid) throw new Error('Not authenticated.');
-
-        const user = await UserModel.findById(User.userId);
-        if (!user) throw new Error('User Not Found');
+        if (!User) throw new Error('Not authenticated.');
 
         const timelineTweets = await TweetModel.find({
-            $or: [{ creator: { $in: user.following } }, { creator: user }]
+            $or: [{ creator: { $in: User.following } }, { creator: User }]
         }).sort({ updatedAt: -1 });
 
         return timelineTweets.map(t => parseTweet(t));
@@ -73,61 +67,52 @@ export default class TweetResolver implements ITweetResolver {
 
     async addReply({ reply }: { reply: IReplyInput }, request: Request): Promise<ITweet[]> {
         const { User }: Req = <Req>request;
-        if (!User.isValid) throw new Error('Not authenticated.');
+        if (!User) throw new Error('Not authenticated.');
 
-        const valideReply = await ReplyValidate.validate(reply);
+        const validReply = await ReplyValidate.validate(reply);
 
-        const [user, parentTweet] = await Promise.all([
-            UserModel.findById(User.userId),
-            TweetModel.findById(valideReply.tweetId)
-        ]);
-        if (!user || !parentTweet) throw new Error('Not Found 404');
+        const parentTweet = await TweetModel.findById(validReply.tweetId);
+        if (!parentTweet) throw new Error('tweet Not Found 404');
 
         const newReply = await new TweetModel({
-            content: valideReply.content,
-            creator: user
+            content: validReply.content,
+            creator: User
         }).save();
 
-        user.tweets.push(newReply.id);
+        User.tweets.push(newReply.id);
         parentTweet.replys.push(newReply.id);
-        await Promise.all([user.save(), parentTweet.save()]);
+        await Promise.all([User.save(), parentTweet.save()]);
 
         return parseTweet(parentTweet);
     }
 
     async retweet({ tweetId }: { tweetId: string }, request: Request): Promise<ITweet> {
         const { User }: Req = <Req>request;
-        if (!User.isValid) throw new Error('Not authenticated.');
+        if (!User) throw new Error('Not authenticated.');
 
-        const [user, tweet] = await Promise.all([
-            UserModel.findById(User.userId).select('-password'),
-            TweetModel.findById(tweetId)
-        ]).catch(_ => {
+        const tweet = await TweetModel.findById(tweetId).catch(_ => {
             throw new Error('tweet id not valid');
         });
-        if (!user || !tweet) throw new Error('Not Found 404');
+        if (!tweet) throw new Error('Not Found 404');
 
-        if (user.tweets.includes(tweet.id)) return parseTweet(tweet);
+        if (User.tweets.includes(tweet.id)) return parseTweet(tweet);
 
-        user.tweets.push(tweet.id);
-        await user.save();
+        User.tweets.push(tweet.id);
+        await User.save();
 
         return parseTweet(tweet);
     }
 
     async deleteTweet({ tweetId }: { tweetId: string }, request: Request): Promise<ITweet> {
         const { User }: Req = <Req>request;
-        if (!User.isValid) throw new Error('Not authenticated.');
+        if (!User) throw new Error('Not authenticated.');
 
-        const [user, tweet] = await Promise.all([
-            UserModel.findById(User.userId).select('-password'),
-            TweetModel.findById(tweetId)
-        ]).catch(_ => {
+        const tweet = await TweetModel.findById(tweetId).catch(_ => {
             throw new Error('tweet id Not Valid');
         });
-        if (!user || !tweet) throw new Error('Not Found 404');
+        if (!tweet) throw new Error('Not Found 404');
 
-        if (tweet.creator.toString() !== user.id) throw new Error('Not authorization');
+        if (tweet.creator.toString() !== User.id) throw new Error('Not authorization');
 
         const deleteFork = fork(join(__dirname, '..', 'libs', 'deleteReplys.js'));
         deleteFork.send({ tweet });

@@ -14,7 +14,7 @@ import jwt from 'jsonwebtoken';
 
 import { UserModel } from '../models';
 
-import { UserValidate, parseUser, changePasswordValidate } from '../libs';
+import { UserValidate, parseUser, changePasswordValidate, loginContentValidate } from '../libs';
 
 export default class UserResolver implements IUserResolver {
     private static instance: UserResolver;
@@ -40,20 +40,24 @@ export default class UserResolver implements IUserResolver {
 
         validUser.password = await bcrypt.hash(validUser.password, 12);
 
-        const savedUser = await new UserModel(validUser).save();
+        const savedUser = await new UserModel(validUser).save().catch(err => {
+            if (err.message.includes('E11000')) throw new Error('User Exists!');
+            throw new Error(err.message);
+        });
         const { password, ...rest } = parseUser(savedUser);
         return rest;
     }
 
     async login({ loginContent }: { loginContent: ILoginInput }): Promise<IUserToken> {
-        const user = await UserModel.findOne({ email: loginContent.email });
+        const validLoginContent = await loginContentValidate.validate(loginContent);
+        const user = await UserModel.findOne({ email: validLoginContent.email });
         if (!user) throw new Error('User Not Exist!');
 
-        const isValid = await bcrypt.compare(loginContent.password, user.password);
+        const isValid = await bcrypt.compare(validLoginContent.password, user.password);
         if (!isValid) throw new Error('Password incorrect');
 
         const token = jwt.sign(
-            { userId: user.id, email: loginContent.email },
+            { userId: user.id, email: validLoginContent.email },
             <string>process.env.SECRET_KEY,
             { expiresIn: '1h' }
         );
@@ -62,8 +66,8 @@ export default class UserResolver implements IUserResolver {
     }
 
     async getUser({ userName }: { userName: string }, request: Request): Promise<IUser> {
-        const req: Req = <Req>request;
-        if (!req.User.isValid) throw new Error('Not authenticated.');
+        const { User }: Req = <Req>request;
+        if (!User) throw new Error('Not authenticated.');
 
         const user = await UserModel.findOne({ userName }).select('-password');
         if (!user) throw new Error('User Not Found 404');
@@ -73,40 +77,35 @@ export default class UserResolver implements IUserResolver {
 
     async follow({ userId }: { userId: string }, request: Request): Promise<IUser> {
         const { User }: Req = <Req>request;
-        if (!User.isValid) throw new Error('Not authenticated');
+        if (!User) throw new Error('Not authenticated');
 
-        const [user, following] = await Promise.all([
-            UserModel.findById(User.userId),
-            UserModel.findById(userId)
-        ]);
-        if (!user || !following) throw new Error('user Not Found');
+        const following = await UserModel.findById(userId);
+        if (!following) throw new Error('user Not Found');
 
-        if (user.following.includes(following.id)) throw new Error('already following');
+        if (User.following.includes(following.id)) throw new Error('already following');
 
-        user.following.push(following.toObject());
-        following.followers.push(user.toObject());
-        await Promise.all([user.save(), following.save()]);
+        User.following.push(following.toObject());
+        following.followers.push(User.toObject());
+        await Promise.all([User.save(), following.save()]);
 
-        return parseUser(user);
+        return parseUser(User);
     }
 
     async unfollow({ userId }: { userId: string }, request: Request): Promise<IUser> {
         const { User }: Req = <Req>request;
-        if (!User.isValid) throw new Error('Not authenticated');
+        if (!User) throw new Error('Not authenticated');
 
-        const [user, followedUser] = await Promise.all([
-            UserModel.findById(User.userId),
-            UserModel.findById(userId)
-        ]);
-        if (!user || !followedUser) throw new Error('user Not Found');
-        if (!user.following.includes(followedUser.id) && !followedUser.followers.includes(user.id))
+        const followedUser = await UserModel.findById(userId);
+        if (!followedUser) throw new Error('user Not Found');
+
+        if (!User.following.includes(followedUser.id) && !followedUser.followers.includes(User.id))
             throw new Error('already unfollowed');
 
-        (user as any).following.pull(followedUser);
-        (followedUser as any).followers.pull(user);
-        await Promise.all([user.save(), followedUser.save()]);
+        (User as any).following.pull(followedUser);
+        (followedUser as any).followers.pull(User);
+        await Promise.all([User.save(), followedUser.save()]);
 
-        return parseUser(user);
+        return parseUser(User);
     }
 
     async changePassword(
@@ -114,19 +113,17 @@ export default class UserResolver implements IUserResolver {
         request: Request
     ): Promise<IUser> {
         const { User }: Req = <Req>request;
-        if (!User.isValid) throw new Error('Not authenticated');
+        if (!User) throw new Error('Not authenticated');
 
-        const user = await UserModel.findById(User.userId);
-        if (!user) throw new Error('user Not Found 404');
         const validPassword = await changePasswordValidate.validate(passwords);
 
-        const isValid = await bcrypt.compare(validPassword.oldPassword, user.password);
+        const isValid = await bcrypt.compare(validPassword.oldPassword, User.password);
         if (!isValid) throw new Error('Password incorrect');
 
-        user.password = await bcrypt.hash(passwords.newPassword, 12);
-        await user.save();
+        User.password = await bcrypt.hash(passwords.newPassword, 12);
+        await User.save();
 
-        const { password, ...rest } = parseUser(user);
+        const { password, ...rest } = parseUser(User);
         return rest;
     }
 }

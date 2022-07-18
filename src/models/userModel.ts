@@ -1,6 +1,17 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 
-const userSchema = new Schema(
+export interface IUserModel {
+    firstName: string;
+    lastName: string;
+    userName: string;
+    email: string;
+    password: string;
+    tweets: Types.ObjectId[];
+    following: Types.ObjectId[];
+    followers: Types.ObjectId[];
+}
+
+const userSchema = new Schema<IUserModel>(
     {
         firstName: { type: String, required: true },
         lastName: { type: String, required: true },
@@ -14,5 +25,5 @@ const userSchema = new Schema(
     { timestamps: true }
 );
 
-const UserModel = mongoose.model('User', userSchema);
+const UserModel = mongoose.model<IUserModel>('User', userSchema);
 export default UserModel;

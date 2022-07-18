@@ -1,13 +1,9 @@
 import type { Request } from 'express';
-
-export interface ValidUser {
-    isValid: boolean;
-    userId?: string;
-    email?: string;
-}
+import type { HydratedDocument } from 'mongoose';
+import type { IUserModel } from './models';
 
 export interface Req extends Request {
-    User: ValidUser;
+    User: HydratedDocument<IUserModel> | null;
 }
 
 export type GetUser = (userId: string) => Promise<IUser>;

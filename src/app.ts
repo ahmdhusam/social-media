@@ -34,7 +34,7 @@ app.use(limiter);
 app.use(helmet());
 app.use(compression());
 app.use(express.json());
-app.use(morgan('tiny', { stream: fileStream }));
+app.use(morgan('combined', { stream: fileStream }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use(auth);

@@ -1,6 +1,12 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Types } from 'mongoose';
 
-const tweetSchema = new Schema(
+interface ITweetModel {
+    content: string;
+    replys: Types.ObjectId[];
+    creator: Types.ObjectId;
+}
+
+const tweetSchema = new Schema<ITweetModel>(
     {
         content: { type: String, required: true },
         replys: [{ type: Schema.Types.ObjectId, required: true, ref: 'Tweet' }],
@@ -9,6 +15,6 @@ const tweetSchema = new Schema(
     { timestamps: true }
 );
 
-const TweetModel = mongoose.model('Tweet', tweetSchema);
+const TweetModel = mongoose.model<ITweetModel>('Tweet', tweetSchema);
 
 export default TweetModel;
