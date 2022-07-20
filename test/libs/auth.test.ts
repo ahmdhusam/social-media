@@ -71,16 +71,10 @@ describe('auth() midlleware', () => {
 
         test('if expire date not valid', async () => {
             const token = jwt.sign({ userId: user.id, email: user.email }, SECRET_KEY, {
-                expiresIn: '1s'
+                expiresIn: 0
             });
             req = getReq('Bearer ' + token);
 
-            // sleep 1s
-            await new Promise(resolve =>
-                setTimeout(() => {
-                    resolve(true);
-                }, 1 * 1000)
-            );
             await auth(req, res, next);
 
             expect((req as Req).User).toBeNull();
