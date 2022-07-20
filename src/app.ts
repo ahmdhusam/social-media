@@ -56,7 +56,7 @@ app.use((_: Request, res: Response) => {
 });
 
 // error handler if async fn ? next(Error) : throw Error
-app.use((error: any, _: Request, res: Response, _1: NextFunction) => {
+app.use((error: Error, _: Request, res: Response, _1: NextFunction) => {
     res.status(505).json({ message: error.message });
 });
 

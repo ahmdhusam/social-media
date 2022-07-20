@@ -19,8 +19,10 @@ export default async (request: Request, _: Response, next: NextFunction) => {
     }
 
     try {
-        const { userId, email } = <ITokenData>jwt.verify(token, <string>process.env.SECRET_KEY);
-        const user = await UserModel.findOne({ _id: userId, email });
+        const tokenData = <ITokenData>jwt.verify(token, <string>process.env.SECRET_KEY);
+        if (!('userId' in tokenData && 'email' in tokenData)) throw new Error('');
+
+        const user = await UserModel.findOne({ _id: tokenData.userId, email: tokenData.email });
         req.User = user;
     } catch (err) {
         req.User = null;

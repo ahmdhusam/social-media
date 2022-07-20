@@ -119,7 +119,7 @@ export default class TweetResolver implements ITweetResolver {
         deleteFork.on('exit', async () => {
             await Promise.all([
                 TweetModel.updateOne({ replys: tweet.id }, { $pull: { replys: tweet.id } }),
-                tweet.delete()
+                tweet.remove()
             ]);
         });
 
