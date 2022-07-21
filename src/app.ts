@@ -10,7 +10,7 @@ import { graphqlHTTP } from 'express-graphql';
 import mongoose from 'mongoose';
 
 // midllewares
-import { auth } from './midlleware';
+import { auth, isAdmin } from './midlleware';
 
 // GraphQL
 import { graphQLSchema, graphQLResolver } from './graphql';
@@ -19,14 +19,14 @@ const app = express();
 const __isProd__ = process.env.NODE_ENV === 'production';
 
 const limiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 60 minutes
-    max: 100, // Limit each IP to 100 requests per `window` (here, per 60 minutes)
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false // Disable the `X-RateLimit-*` headers
+  windowMs: 60 * 60 * 1000, // 60 minutes
+  max: 100, // Limit each IP to 100 requests per `window` (here, per 60 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false // Disable the `X-RateLimit-*` headers
 });
 
-const fileStream = fs.createWriteStream(path.join(__dirname, 'log.log'), {
-    flags: 'a'
+const fileStream = fs.createWriteStream(path.join(__dirname, '..', 'logs', 'log.log'), {
+  flags: 'a'
 });
 
 // Apply the rate limiting middleware to all requests
@@ -36,40 +36,41 @@ app.use(compression());
 app.use(express.json());
 app.use(morgan('combined', { stream: fileStream }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(isAdmin, express.static(path.join(__dirname, '..', 'logs')));
 
 app.use(auth);
 
 app.use(
-    '/graphql',
-    graphqlHTTP({
-        schema: graphQLSchema,
-        rootValue: graphQLResolver,
-        graphiql: !__isProd__,
-        customFormatErrorFn: err => {
-            return err;
-        }
-    })
+  '/graphql',
+  graphqlHTTP({
+    schema: graphQLSchema,
+    rootValue: graphQLResolver,
+    graphiql: !__isProd__,
+    customFormatErrorFn: err => {
+      return err;
+    }
+  })
 );
 
 app.use((_: Request, res: Response) => {
-    res.end('404');
+  res.end('404');
 });
 
 // error handler if async fn ? next(Error) : throw Error
 app.use((error: Error, _: Request, res: Response, _1: NextFunction) => {
-    res.status(505).json({ message: error.message });
+  res.status(505).json({ message: error.message });
 });
 
 (function main() {
-    const { DBURL, PORT = 3300 } = process.env;
+  const { DBURL, PORT = 3300 } = process.env;
 
-    typeof DBURL === 'string' &&
-        mongoose
-            .connect(DBURL)
-            .then(() => {
-                app.listen(PORT, () => {
-                    console.log('Server running on ', PORT);
-                });
-            })
-            .catch(err => console.error('DBError:', err.message));
+  typeof DBURL === 'string' &&
+    mongoose
+      .connect(DBURL)
+      .then(() => {
+        app.listen(PORT, () => {
+          console.log('Server running on ', PORT);
+        });
+      })
+      .catch(err => console.error('DBError:', err.message));
 })();
