@@ -30,13 +30,13 @@ const fileStream = fs.createWriteStream(path.join(__dirname, '..', 'logs', 'log.
 });
 
 // Apply the rate limiting middleware to all requests
-app.use(limiter);
-app.use(helmet());
+__isProd__ && app.use(limiter);
+__isProd__ && app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(morgan('combined', { stream: fileStream }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
-app.use(isAdmin, express.static(path.join(__dirname, '..', 'logs')));
+app.use('/logs', isAdmin, express.static(path.join(__dirname, '..', 'logs')));
 
 app.use(auth);
 
