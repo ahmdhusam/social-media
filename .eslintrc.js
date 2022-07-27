@@ -18,7 +18,13 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'warn',
     '@typescript-eslint/explicit-module-boundary-types': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
-    'prettier/prettier': 'error',
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto'
+      },
+      { usePrettierrc: true }
+    ],
     'no-console': 'warn',
     'no-magic-numbers': 'warn',
     'no-param-reassign': 'warn',
