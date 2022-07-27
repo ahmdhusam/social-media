@@ -1,5 +1,7 @@
 import { DataSource } from 'typeorm';
 
+import { User } from '../models';
+
 import { __isProd__ } from '../constants';
 
 export const AppDataSource = new DataSource({
@@ -9,6 +11,6 @@ export const AppDataSource = new DataSource({
   username: 'postgres',
   password: process.env.PGPASSWORD,
   database: process.env.PGNAME,
-  entities: [],
+  entities: [User],
   synchronize: !__isProd__
 });
