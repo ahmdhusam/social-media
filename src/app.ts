@@ -9,20 +9,27 @@ import morgan from 'morgan';
 import { graphqlHTTP } from 'express-graphql';
 import mongoose from 'mongoose';
 
-// midllewares
+// Midllewares
 import { auth, isAdmin } from './midlleware';
 
 // GraphQL
 import { graphQLSchema, graphQLResolver } from './graphql';
 
-const app = express();
-const __isProd__ = process.env.NODE_ENV === 'production';
+import { AppDataSource } from './libs';
+import { __isProd__ } from './constants';
 
+const app = express();
+
+const oneHour = 60 * 60 * 1000;
 const limiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 60 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 60 minutes)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false // Disable the `X-RateLimit-*` headers
+  // 60 minutes
+  windowMs: oneHour,
+  // Limit each IP to 100 requests per `window` (here, per 60 minutes)
+  max: 100,
+  // Return rate limit info in the `RateLimit-*` headers
+  standardHeaders: true,
+  // Disable the `X-RateLimit-*` headers
+  legacyHeaders: false
 });
 
 const fileStream = fs.createWriteStream(path.join(__dirname, '..', 'logs', 'log.log'), {
@@ -56,21 +63,18 @@ app.use((_: Request, res: Response) => {
   res.end('404');
 });
 
-// error handler if async fn ? next(Error) : throw Error
+// Error handler if async fn ? next(Error) : throw Error
 app.use((error: Error, _: Request, res: Response, _1: NextFunction) => {
   res.status(505).json({ message: error.message });
 });
 
-(function main() {
-  const { DBURL, PORT = 3300 } = process.env;
+(async function main(): Promise<void> {
+  const defaultPort = 3300;
+  const { MONGODBURL, PORT = defaultPort } = process.env;
+  await AppDataSource.initialize().catch((err: Error) => console.error('TypeOrm Error', err.message));
+  await mongoose.connect(MONGODBURL).catch((err: Error) => console.error('Mongoose Error:', err.message));
 
-  typeof DBURL === 'string' &&
-    mongoose
-      .connect(DBURL)
-      .then(() => {
-        app.listen(PORT, () => {
-          console.log('Server running on ', PORT);
-        });
-      })
-      .catch(err => console.error('DBError:', err.message));
+  app.listen(PORT, () => {
+    console.log('Server running on ', PORT);
+  });
 })();
