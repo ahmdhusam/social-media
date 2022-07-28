@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, BaseEntity } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BaseEntity, OneToMany } from 'typeorm';
+import { Tweets } from './tweetsEntity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -19,4 +20,7 @@ export class User extends BaseEntity {
 
   @Column()
   password: string;
+
+  @OneToMany(() => Tweets, tweets => tweets.creator)
+  tweets: Tweets[];
 }
