@@ -8,9 +8,10 @@ import {
   UpdateDateColumn,
   Check
 } from 'typeorm';
+import { Follow } from './followEntity';
 import { Tweet } from './tweetEntity';
 
-@Check(`"birth_date" < (now() - interval '18 year')`)
+@Check(`"birth_date" < (CURRENT_DATE - interval '18 year -1 day')`)
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -31,18 +32,24 @@ export class User extends BaseEntity {
   @Column({ length: 100, default: '' })
   bio: string;
 
-  @Column({ name: 'birth_date' })
+  @Column({ name: 'birth_date', type: 'date' })
   birthDate: Date;
 
   @Column({ default: '' })
   avatar: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @OneToMany(() => Tweet, tweet => tweet.creator)
   tweets: Tweet[];
+
+  @OneToMany(() => Follow, follow => follow.follower)
+  followers: Follow;
+
+  @OneToMany(() => Follow, follow => follow.following)
+  followings: Follow;
 }
