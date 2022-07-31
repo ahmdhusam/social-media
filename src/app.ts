@@ -15,8 +15,18 @@ import { auth, isAdmin } from './midlleware';
 // GraphQL
 import { graphQLSchema, graphQLResolver } from './graphql';
 
+import { User } from './models';
 import { AppDataSource } from './libs';
 import { __isProd__ } from './constants';
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      User: User | null;
+    }
+  }
+}
 
 const app = express();
 

@@ -1,80 +1,103 @@
 import { buildSchema } from 'graphql';
 
 export default buildSchema(`
-
-    type Tweet {
-        id:ID!
-        content:String!
-        replys:[Tweet!]!
-        creator:User!
-    }
+    scalar Date
 
     type User {
         id: ID!
-        firstName: String!
-        lastName: String!
+        name: String!
         userName: String!
         email: String!
+        bio: String!
+        birthDate: Date!
+        gender: String!
+        avatar: String!
+        header: String!
+        createdAt: Date!
         tweets: [Tweet!]!
         following: [User!]!
         followers: [User!]!
+    }
+
+    type Tweet {
+        id: ID!
+        content: String!
+        createdAt: Date!
+        creator: User!
+        replys: [Tweet!]!
+    }
+
+    type CreatedUser {
+        name: String!
+        userName: String!
+        email: String!
+        birthDate: Date!
+        gender: String!
+        avatar: String!
     }
 
     type UserToken {
         id: ID!
-        token:String!
-        firstName: String!
-        lastName: String!
+        access_token: String!
+        name: String!
         userName: String!
         email: String!
+        bio: String!
+        birthDate: Date!
+        gender: String!
+        avatar: String!
+        header: String!
+        createdAt: Date!
         tweets: [Tweet!]!
         following: [User!]!
         followers: [User!]!
     }
 
-    input LoginInput {
-        email: String!
-        password: String!
-    }
-
-    input UserInput {
-        firstName: String!
-        lastName: String!
+    input UserData {
+        name: String!
         userName: String!
         email: String!
+        birthDate: Date!
+        gender: String!
         password: String!
     }
 
-    input TweetInput {
+    input LoginData {
+        email: String!
+        password: String!
+    }
+
+    input TweetData {
         content:String!
     }
 
-    input ReplyInput {
+    input ReplyData {
         tweetId: ID!
         content: String!
     }
 
-    input ChangePasswordInput {
+    input ChangePasswordData {
         oldPassword: String!
         newPassword: String!
     }
 
     type RootQuery {
-        login(loginContent: LoginInput!): UserToken!
-        getUser(userName:String!): User!
+        me: User!
+        login(loginContent: LoginData!): UserToken!
+        getUser(userName: String!): User!
         getTweet(tweetId: ID!): Tweet!
         getTimeline: [Tweet!]!
     }
 
     type RootMutation {
-        createUser(user: UserInput!): User!
-        createTweet(tweet: TweetInput!): Tweet!
+        createUser(user: UserData!): CreatedUser!
+        createTweet(tweet: TweetData!): Tweet!
         follow(userId: ID!): User!
         unfollow(userId: ID!): User!
-        addReply(reply: ReplyInput): Tweet!
+        addReply(reply: ReplyData): Tweet!
         retweet(tweetId: ID!): Tweet!
         deleteTweet(tweetId: ID!): Tweet!
-        changePassword(passwords: ChangePasswordInput!): User!
+        changePassword(passwords: ChangePasswordData!): User!
     }
 
     schema {
