@@ -1,28 +1,30 @@
 import * as Yup from 'yup';
+import { Gender } from '../models';
 
-export const UserValidate = Yup.object().shape({
-  password: Yup.string().required().trim().min(8).max(200),
-  email: Yup.string().required().trim().min(5).max(200).lowercase().email(),
-  userName: Yup.string().required().trim().min(4).max(50).lowercase(),
-  lastName: Yup.string().required().trim().min(3).max(200),
-  firstName: Yup.string().required().trim().min(3).max(200)
+export const UserDataValidate = Yup.object().shape({
+  password: Yup.string().required().trim().min(8).max(150),
+  gender: Yup.string().required().trim().lowercase().oneOf([Gender.Male, Gender.Female]),
+  birthDate: Yup.date().required(),
+  email: Yup.string().required().trim().min(3).max(49).lowercase().email(),
+  userName: Yup.string().required().trim().min(3).max(39).lowercase(),
+  name: Yup.string().required().trim().min(3).max(99)
 });
 
-export const TweetValidate = Yup.object().shape({
-  content: Yup.string().required().trim().min(1).max(150)
+export const LoginDataValidate = Yup.object().shape({
+  password: Yup.string().required().trim().min(8).max(150),
+  email: Yup.string().required().trim().min(3).max(49).lowercase().email()
 });
 
-export const ReplyValidate = Yup.object().shape({
-  content: Yup.string().required().trim().min(1).max(150),
-  tweetId: Yup.string().required().trim().length(24)
+export const TweetDataValidate = Yup.object().shape({
+  content: Yup.string().required().trim().min(1).max(140)
 });
 
-export const changePasswordValidate = Yup.object().shape({
-  newPassword: Yup.string().required().trim().min(8).max(200),
-  oldPassword: Yup.string().required().trim().min(8).max(200)
+export const ReplyDataValidate = Yup.object().shape({
+  content: Yup.string().required().trim().min(1).max(140),
+  tweetId: Yup.string().required().trim().length(36)
 });
 
-export const loginContentValidate = Yup.object().shape({
-  password: Yup.string().required().trim().min(8).max(200),
-  email: Yup.string().required().trim().min(5).max(200).lowercase().email()
+export const PasswordsDataValidate = Yup.object().shape({
+  newPassword: Yup.string().required().trim().min(8).max(150),
+  oldPassword: Yup.string().required().trim().min(8).max(150)
 });
