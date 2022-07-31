@@ -77,8 +77,8 @@ export default buildSchema(`
     }
 
     input ChangePasswordData {
-        oldPassword: String!
-        newPassword: String!
+        old: String!
+        new: String!
     }
 
     type RootQuery {

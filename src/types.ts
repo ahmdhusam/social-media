@@ -66,8 +66,8 @@ export interface IReplyData {
 }
 
 export interface IChangePasswordData {
-  oldPassword: string;
-  newPassword: string;
+  old: string;
+  new: string;
 }
 
 export interface IUserResolver {

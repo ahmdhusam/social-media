@@ -25,6 +25,6 @@ export const ReplyDataValidate = Yup.object().shape({
 });
 
 export const PasswordsDataValidate = Yup.object().shape({
-  newPassword: Yup.string().required().trim().min(8).max(150),
-  oldPassword: Yup.string().required().trim().min(8).max(150)
+  new: Yup.string().required().trim().min(8).max(150),
+  old: Yup.string().required().trim().min(8).max(150)
 });

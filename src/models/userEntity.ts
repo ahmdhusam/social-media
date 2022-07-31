@@ -16,7 +16,11 @@ export enum Gender {
   Female = 'female'
 }
 
-@Check(`"birth_date" < (CURRENT_DATE - interval '18 year -1 day')`)
+@Check(`
+  "birth_date" < (CURRENT_DATE - interval '18 year -1 day') 
+AND
+  "birth_date" > (CURRENT_DATE - interval '120 year 1 day')
+`)
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -58,9 +62,9 @@ export class User extends BaseEntity {
   @OneToMany(() => Tweet, tweet => tweet.creator)
   tweets: Tweet[];
 
-  @OneToMany(() => Follow, follow => follow.follower)
+  @OneToMany(() => Follow, follow => follow.following)
   followers: Follow;
 
-  @OneToMany(() => Follow, follow => follow.following)
+  @OneToMany(() => Follow, follow => follow.follower)
   followings: Follow;
 }
