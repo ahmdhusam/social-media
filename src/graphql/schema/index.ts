@@ -15,7 +15,7 @@ export default buildSchema(`
         header: String!
         createdAt: Date!
         tweets: [Tweet!]!
-        following: [User!]!
+        followings: [User!]!
         followers: [User!]!
     }
 
@@ -49,7 +49,7 @@ export default buildSchema(`
         header: String!
         createdAt: Date!
         tweets: [Tweet!]!
-        following: [User!]!
+        followings: [User!]!
         followers: [User!]!
     }
 

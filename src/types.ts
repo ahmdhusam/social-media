@@ -17,7 +17,7 @@ export interface IUser {
   header: string;
   createdAt: Date;
   tweets: GetTweets;
-  following: GetUsers;
+  followings: GetUsers;
   followers: GetUsers;
 }
 
@@ -26,7 +26,6 @@ export interface ITweet {
   content: string;
   createdAt: Date;
   creator: GetUser;
-  replys: GetTweets;
 }
 
 interface ICreatedUser {
@@ -84,7 +83,7 @@ export interface ITweetResolver {
   createTweet(ctx: { tweet: ITweetData }, req: Request): Promise<ITweet>;
   getTweet(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
   getTimeline(_: never, req: Request): Promise<ITweet[]>;
-  addReply(ctx: { reply: IReplyData }, req: Request): Promise<ITweet[]>;
+  addReply(ctx: { reply: IReplyData }, req: Request): Promise<ITweet>;
   retweet(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
   deleteTweet(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
 }

@@ -47,7 +47,7 @@ export class User extends BaseEntity {
   @Column({ default: '/images/avatar.png' })
   avatar: string;
 
-  @Column({ nullable: true })
+  @Column({ default: '' })
   header: string;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -63,8 +63,8 @@ export class User extends BaseEntity {
   tweets: Tweet[];
 
   @OneToMany(() => Follow, follow => follow.following)
-  followers: Follow;
+  followers: Follow[];
 
   @OneToMany(() => Follow, follow => follow.follower)
-  followings: Follow;
+  followings: Follow[];
 }
