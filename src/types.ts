@@ -28,7 +28,7 @@ export interface ITweet {
   creator: GetUser;
 }
 
-interface ICreatedUser {
+export interface ICreatedUser {
   name: string;
   userName: string;
   email: string;
