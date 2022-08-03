@@ -3,6 +3,7 @@ import { Gender } from './models';
 
 export type GetUser = (userId: string) => Promise<IUser>;
 export type GetUsers = (usersId: string[]) => Promise<IUser[]>;
+export type GetTweet = (tweetId: string) => Promise<ITweet>;
 export type GetTweets = (tweetsId: string[]) => Promise<ITweet[]>;
 
 export interface IUser {
@@ -25,6 +26,7 @@ export interface ITweet {
   id: string;
   content: string;
   createdAt: Date;
+  replys: GetTweets;
   creator: GetUser;
 }
 
