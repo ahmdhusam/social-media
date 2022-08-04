@@ -12,6 +12,5 @@ export const AppDataSource = new DataSource({
   password: process.env.PGPASSWORD,
   database: process.env.PGNAME,
   entities: [User, Tweet, Follow],
-  synchronize: !__isProd__,
-  dropSchema: !__isProd__
+  synchronize: !__isProd__
 });

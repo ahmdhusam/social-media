@@ -7,7 +7,6 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import { graphqlHTTP } from 'express-graphql';
-import mongoose from 'mongoose';
 
 // Midllewares
 import { auth, isAdmin } from './midlleware';
@@ -74,15 +73,14 @@ app.use((_: Request, res: Response) => {
 });
 
 // Error handler if async fn ? next(Error) : throw Error
-app.use((error: Error, _: Request, res: Response, _1: NextFunction) => {
+app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(505).json({ message: error.message });
 });
 
 (async function main(): Promise<void> {
   const defaultPort = 3300;
-  const { MONGODBURL, PORT = defaultPort } = process.env;
+  const { PORT = defaultPort } = process.env;
   await AppDataSource.initialize().catch((err: Error) => console.error('TypeOrm Error', err.message));
-  await mongoose.connect(MONGODBURL).catch((err: Error) => console.error('Mongoose Error:', err.message));
 
   app.listen(PORT, () => {
     console.log('Server running on ', PORT);

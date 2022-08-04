@@ -30,6 +30,6 @@ export class Tweet extends BaseEntity {
   @OneToMany(() => Tweet, tweet => tweet.parent)
   replys: Tweet[];
 
-  @ManyToOne(() => User, user => user.tweets, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, user => user.tweets, { onDelete: 'CASCADE', nullable: false })
   creator: User;
 }

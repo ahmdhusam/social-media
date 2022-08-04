@@ -24,7 +24,9 @@ Now create a file called `.env` in the project root and add the following variab
 **.env**
 
 ```bash
-DBURL={MongoDB URL}
+PGPORT={Postgres port URL}
+PGNAME={Database name}
+PGPASSWORD={Database password}
 PORT={Port} // Default 3300
 SECRET_KEY={Secret Key For JWT}
 ADMIN_ACCESS={Token to access Logs folder}
@@ -48,27 +50,20 @@ Create new User:
 mutation {
   createUser(
     user: {
-      firstName: "Luke"
-      lastName: "Skywalker"
+      name: "Luke Skywalker"
       userName: "luke_skywalker"
       email: "lukeskywalker@mail.com"
-      password: "12345678"
+      birthDate: "1996-1-11"
+      gender: "male"
+      password: "strongPassword"
     }
   ) {
-    id
-    firstName
-    lastName
+    name
     userName
     email
-    tweets {
-      content
-    }
-    following {
-      userName
-    }
-    followers {
-      userName
-    }
+    birthDate
+    gender
+    avatar
   }
 }
 ```
@@ -79,9 +74,8 @@ Login To Get Access Token Back (_You have to put the access token in the authori
 query {
   login(loginContent: { email: "lukeskywalker@mail.com", password: "12345678" }) {
     id
-    token
-    firstName
-    lastName
+    access_token
+    name
     userName
     email
     tweets {
@@ -95,6 +89,49 @@ query {
           userName
         }
       }
+    }
+  }
+}
+```
+
+Return the current user:
+
+```graphql
+mutation {
+  me {
+    id
+    name
+    userName
+    email
+    bio
+    birthDate
+    gender
+    avatar
+    header
+    createdAt
+    tweets {
+      id
+      content
+      replys {
+        content
+        creator {
+          userName
+        }
+      }
+    }
+    followings {
+      id
+      name
+      userName
+      avatar
+      header
+    }
+    followers {
+      id
+      name
+      userName
+      avatar
+      header
     }
   }
 }
@@ -121,7 +158,7 @@ Retweet:
 
 ```graphql
 mutation {
-  retweet(tweetId: "62dd9f6d456be30d7ab94ddd") {
+  retweet(tweetId: "0ac7bc4b-e0ac-4d33-abdf-725fa9351827") {
     id
     content
     creator {
@@ -135,7 +172,7 @@ Add Reply To Tweet:
 
 ```graphql
 mutation {
-  addReply(reply: { tweetId: "62dd9f6d456be30d7ab94ddd", content: "Reply 1" }) {
+  addReply(reply: { tweetId: "0ac7bc4b-e0ac-4d33-abdf-725fa9351827", content: "Reply 1" }) {
     id
     content
     creator {
@@ -163,7 +200,7 @@ Get a Specific Tweet:
 
 ```graphql
 query {
-  getTweet(tweetId: "62dd9f6d456be30d7ab94ddd") {
+  getTweet(tweetId: "0ac7bc4b-e0ac-4d33-abdf-725fa9351827") {
     id
     content
     replys {
@@ -183,16 +220,14 @@ Follow Another User:
 
 ```graphql
 mutation {
-  follow(userId: "62dd9d85456be30d7ab94dc7") {
+  follow(userId: "4920b7c7-01d6-41e2-bf1e-249c2ee65e1d") {
     id
-    firstName
-    lastName
+    name
     userName
     email
     followers {
       id
-      firstName
-      lastName
+      name
       userName
       email
     }
@@ -204,9 +239,8 @@ Unfollow a User You Already Follow:
 
 ```graphql
 mutation {
-  unfollow(userId: "62dd9dac456be30d7ab94dcc") {
-    firstName
-    lastName
+  unfollow(userId: "4920b7c7-01d6-41e2-bf1e-249c2ee65e1d") {
+    name
     userName
   }
 }
@@ -216,7 +250,7 @@ Delete Tweet (_It Will Delete all Nested Replies_):
 
 ```graphql
 mutation {
-  deleteTweet(tweetId: "62dd9f6d456be30d7ab94ddd") {
+  deleteTweet(tweetId: "0ac7bc4b-e0ac-4d33-abdf-725fa9351827") {
     content
     replys {
       id
@@ -243,10 +277,9 @@ Update User Password:
 
 ```graphql
 mutation {
-  changePassword(passwords: { oldPassword: "12345678", newPassword: "lukesky123" }) {
+  changePassword(passwords: { old: "strongPassword", new: "lukesky123" }) {
     id
-    firstName
-    lastName
+    name
     userName
     email
   }
@@ -259,8 +292,7 @@ Get a Specific User:
 query {
   getUser(userName: "luke_skywalker") {
     id
-    firstName
-    lastName
+    name
     userName
     tweets {
       id
@@ -288,8 +320,7 @@ query {
       }
     }
     creator {
-      firstName
-      lastName
+      name
       userName
     }
   }
