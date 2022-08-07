@@ -15,6 +15,7 @@ export default buildSchema(`
         header: String!
         createdAt: Date!
         tweets: [Tweet!]!
+        likes: [Tweet!]!
         followings: [User!]!
         followers: [User!]!
     }
@@ -24,6 +25,7 @@ export default buildSchema(`
         content: String!
         createdAt: Date!
         creator: User!
+        likedBy: [User!]
         replys: [Tweet!]!
     }
 
@@ -49,6 +51,7 @@ export default buildSchema(`
         header: String!
         createdAt: Date!
         tweets: [Tweet!]!
+        likes: [Tweet!]!
         followings: [User!]!
         followers: [User!]!
     }
@@ -98,6 +101,7 @@ export default buildSchema(`
         retweet(tweetId: ID!): Tweet!
         deleteTweet(tweetId: ID!): Tweet!
         changePassword(passwords: ChangePasswordData!): User!
+        like(tweetId: ID!): Tweet!
     }
 
     schema {

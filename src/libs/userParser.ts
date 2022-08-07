@@ -10,6 +10,10 @@ export function parseUser(user: User): IUser {
       null,
       user.tweets.slice(0, 20).map(tweet => tweet.id)
     ),
+    likes: getTweets.bind(
+      null,
+      user.likes.slice(0, 20).map(tweet => tweet.id)
+    ),
     followings: getUsers.bind(
       null,
       user.followings.slice(0, 20).map(follow => follow.following.toString())
@@ -26,10 +30,13 @@ export const getUser: GetUser = async (userId: string) => {
     where: {
       id: userId
     },
-    relations: ['tweets', 'followings', 'followers'],
+    relations: ['tweets', 'followings', 'followers', 'likes'],
     select: {
       password: false,
       tweets: {
+        id: true
+      },
+      likes: {
         id: true
       },
       followings: {
@@ -48,15 +55,18 @@ export const getUser: GetUser = async (userId: string) => {
   return parseUser(user);
 };
 
-const getUsers: GetUsers = async (usersId: string[]) => {
+export const getUsers: GetUsers = async (usersId: string[]) => {
   const users = await User.find({
     where: {
       id: In(usersId)
     },
-    relations: ['tweets', 'followings', 'followers'],
+    relations: ['tweets', 'followings', 'followers', 'likes'],
     select: {
       password: false,
       tweets: {
+        id: true
+      },
+      likes: {
         id: true
       },
       followings: {

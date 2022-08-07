@@ -18,6 +18,7 @@ export interface IUser {
   header: string;
   createdAt: Date;
   tweets: GetTweets;
+  likes: GetTweets;
   followings: GetUsers;
   followers: GetUsers;
 }
@@ -26,8 +27,9 @@ export interface ITweet {
   id: string;
   content: string;
   createdAt: Date;
-  replys: GetTweets;
   creator: GetUser;
+  likedBy: GetUsers;
+  replys: GetTweets;
 }
 
 export interface ICreatedUser {
@@ -88,4 +90,5 @@ export interface ITweetResolver {
   addReply(ctx: { reply: IReplyData }, req: Request): Promise<ITweet>;
   retweet(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
   deleteTweet(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
+  like(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
 }

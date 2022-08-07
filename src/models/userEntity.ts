@@ -6,7 +6,9 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
-  Check
+  Check,
+  ManyToMany,
+  JoinTable
 } from 'typeorm';
 import { Follow } from './followEntity';
 import { Tweet } from './tweetEntity';
@@ -61,6 +63,10 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Tweet, tweet => tweet.creator)
   tweets: Tweet[];
+
+  @ManyToMany(() => Tweet, tweet => tweet.likedBy, { onDelete: 'CASCADE' })
+  @JoinTable()
+  likes: Tweet[];
 
   @OneToMany(() => Follow, follow => follow.following)
   followers: Follow[];

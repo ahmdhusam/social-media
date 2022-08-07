@@ -6,7 +6,8 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
   ManyToOne,
-  OneToMany
+  OneToMany,
+  ManyToMany
 } from 'typeorm';
 import { User } from './userEntity';
 
@@ -27,9 +28,12 @@ export class Tweet extends BaseEntity {
   @ManyToOne(() => Tweet, tweet => tweet.replys, { onDelete: 'CASCADE' })
   parent: Tweet;
 
-  @OneToMany(() => Tweet, tweet => tweet.parent)
-  replys: Tweet[];
-
   @ManyToOne(() => User, user => user.tweets, { onDelete: 'CASCADE', nullable: false })
   creator: User;
+
+  @ManyToMany(() => User, user => user.likes, { onDelete: 'CASCADE' })
+  likedBy: User[];
+
+  @OneToMany(() => Tweet, tweet => tweet.parent)
+  replys: Tweet[];
 }
