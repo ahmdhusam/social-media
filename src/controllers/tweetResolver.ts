@@ -1,7 +1,7 @@
 import type { Request } from 'express';
 import type { IReplyData, ITweet, ITweetData, ITweetResolver } from '../types';
 import { In } from 'typeorm';
-import { Tweet, Follow } from '../models';
+import { Tweet } from '../models';
 import { TweetDataValidate, getTweet, getTweets, ReplyDataValidate } from '../libs';
 
 export default class TweetResolver implements ITweetResolver {
@@ -46,20 +46,10 @@ export default class TweetResolver implements ITweetResolver {
   async getTimeline(_: never, req: Request): Promise<ITweet[]> {
     if (!req.User) throw new Error('Not authenticated.');
 
-    const followings = (
-      await Follow.find({
-        select: { following: { id: true } },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        where: { follower: req.User.id },
-        order: { createdAt: 'DESC' },
-        take: 20
-      })
-    ).map(follow => follow.following);
-
+    const followingIds = (await req.User.followings).map(user => user.id);
     const timelineTweets = await Tweet.find({
       select: { id: true, createdAt: true },
-      where: [{ creator: { id: 'afdcb29d-7506-4109-9ee7-fad7da443904' } }, { creator: { id: In(followings) } }],
+      where: [{ creator: { id: req.User.id } }, { creator: { id: In(followingIds) } }],
       order: { createdAt: 'DESC' },
       take: 20
     });
@@ -105,10 +95,10 @@ export default class TweetResolver implements ITweetResolver {
   async like({ tweetId }: { tweetId: string }, req: Request): Promise<ITweet> {
     if (!req.User) throw new Error('Not authenticated.');
 
-    const tweet = await Tweet.findOneById(tweetId);
+    const tweet = await Tweet.findOneByOrFail({ id: tweetId });
     if (!tweet) throw new Error('Not Found 404');
 
-    req.User.likes = [tweet];
+    (await req.User.likes).push(tweet);
     await req.User.save();
 
     return getTweet(tweetId);

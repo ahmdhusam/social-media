@@ -10,7 +10,6 @@ import {
   ManyToMany,
   JoinTable
 } from 'typeorm';
-import { Follow } from './followEntity';
 import { Tweet } from './tweetEntity';
 
 export enum Gender {
@@ -61,16 +60,17 @@ export class User extends BaseEntity {
   @Column({ length: 61 })
   password: string;
 
-  @OneToMany(() => Tweet, tweet => tweet.creator)
-  tweets: Tweet[];
+  @OneToMany(() => Tweet, tweet => tweet.creator, { lazy: true })
+  tweets: Promise<Tweet[]>;
 
-  @ManyToMany(() => Tweet, tweet => tweet.likedBy, { onDelete: 'CASCADE' })
+  @ManyToMany(() => Tweet, tweet => tweet.likedBy, { onDelete: 'CASCADE', lazy: true })
   @JoinTable()
-  likes: Tweet[];
+  likes: Promise<Tweet[]>;
 
-  @OneToMany(() => Follow, follow => follow.following)
-  followers: Follow[];
+  @ManyToMany(() => User, user => user.followings, { onDelete: 'CASCADE', lazy: true })
+  followers: Promise<User[]>;
 
-  @OneToMany(() => Follow, follow => follow.follower)
-  followings: Follow[];
+  @ManyToMany(() => User, user => user.followers, { onDelete: 'CASCADE', lazy: true })
+  @JoinTable({ joinColumn: { name: 'follower_id' }, inverseJoinColumn: { name: 'following_id' } })
+  followings: Promise<User[]>;
 }

@@ -1,10 +1,12 @@
 import type { Request } from 'express';
-import { Gender } from './models';
+import { Gender, Tweet, User } from './models';
 
 export type GetUser = (userId: string) => Promise<IUser>;
 export type GetUsers = (usersId: string[]) => Promise<IUser[]>;
 export type GetTweet = (tweetId: string) => Promise<ITweet>;
 export type GetTweets = (tweetsId: string[]) => Promise<ITweet[]>;
+
+export type Lazy<T> = () => Promise<T>;
 
 export interface IUser {
   id: string;
@@ -17,10 +19,10 @@ export interface IUser {
   avatar: string;
   header: string;
   createdAt: Date;
-  tweets: GetTweets;
-  likes: GetTweets;
-  followings: GetUsers;
-  followers: GetUsers;
+  tweets: Lazy<Tweet[]>;
+  likes: Lazy<Tweet[]>;
+  followings: Lazy<User[]>;
+  followers: Lazy<User[]>;
 }
 
 export interface ITweet {
