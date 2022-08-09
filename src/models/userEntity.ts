@@ -18,9 +18,11 @@ export enum Gender {
 }
 
 @Check(`
-  "birth_date" < (CURRENT_DATE - interval '18 year -1 day') 
-AND
-  "birth_date" > (CURRENT_DATE - interval '120 year 1 day')
+  "birth_date"
+  BETWEEN
+  (CURRENT_DATE - interval '120 year')
+  AND
+  (CURRENT_DATE - interval '18 year') 
 `)
 @Entity({ name: 'users' })
 export class User extends BaseEntity {

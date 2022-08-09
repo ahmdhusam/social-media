@@ -1,11 +1,6 @@
 import type { Request } from 'express';
 import { Gender, Tweet, User } from './models';
 
-export type GetUser = (userId: string) => Promise<IUser>;
-export type GetUsers = (usersId: string[]) => Promise<IUser[]>;
-export type GetTweet = (tweetId: string) => Promise<ITweet>;
-export type GetTweets = (tweetsId: string[]) => Promise<ITweet[]>;
-
 export type Lazy<T> = () => Promise<T>;
 
 export interface IUser {
@@ -29,9 +24,9 @@ export interface ITweet {
   id: string;
   content: string;
   createdAt: Date;
-  creator: GetUser;
-  likedBy: GetUsers;
-  replys: GetTweets;
+  creator: Lazy<User>;
+  likedBy: Lazy<User[]>;
+  replys: Lazy<Tweet[]>;
 }
 
 export interface ICreatedUser {

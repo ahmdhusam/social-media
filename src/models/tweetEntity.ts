@@ -19,21 +19,21 @@ export class Tweet extends BaseEntity {
   @Column({ length: 141 })
   content: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToOne(() => Tweet, tweet => tweet.replys, { onDelete: 'CASCADE' })
-  parent: Tweet;
+  @ManyToOne(() => Tweet, tweet => tweet.replys, { onDelete: 'CASCADE', lazy: true })
+  parent: Promise<Tweet>;
 
-  @ManyToOne(() => User, user => user.tweets, { onDelete: 'CASCADE', nullable: false })
-  creator: User;
+  @ManyToOne(() => User, user => user.tweets, { onDelete: 'CASCADE', nullable: false, lazy: true })
+  creator: Promise<User>;
 
-  @ManyToMany(() => User, user => user.likes, { onDelete: 'CASCADE' })
-  likedBy: User[];
+  @ManyToMany(() => User, user => user.likes, { onDelete: 'CASCADE', lazy: true })
+  likedBy: Promise<User[]>;
 
-  @OneToMany(() => Tweet, tweet => tweet.parent)
-  replys: Tweet[];
+  @OneToMany(() => Tweet, tweet => tweet.parent, { lazy: true })
+  replys: Promise<Tweet[]>;
 }
