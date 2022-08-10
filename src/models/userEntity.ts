@@ -69,6 +69,10 @@ export class User extends BaseEntity {
   @JoinTable()
   likes: Promise<Tweet[]>;
 
+  @ManyToMany(() => Tweet, tweet => tweet.retweetedBy, { lazy: true })
+  @JoinTable()
+  retweets: Promise<Tweet[]>;
+
   @ManyToMany(() => User, user => user.followings, { onDelete: 'CASCADE', lazy: true })
   followers: Promise<User[]>;
 

@@ -6,6 +6,7 @@ export const parseTweet = (tweet: Tweet): ITweet => {
     ...tweet,
     creator: () => tweet.creator,
     likedBy: () => tweet.likedBy,
+    retweetedBy: () => tweet.retweetedBy,
     replys: () => tweet.replys
   };
 };

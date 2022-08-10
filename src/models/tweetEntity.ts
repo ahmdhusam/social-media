@@ -34,6 +34,9 @@ export class Tweet extends BaseEntity {
   @ManyToMany(() => User, user => user.likes, { onDelete: 'CASCADE', lazy: true })
   likedBy: Promise<User[]>;
 
+  @ManyToMany(() => User, user => user.retweets, { onDelete: 'CASCADE', lazy: true })
+  retweetedBy: Promise<User[]>;
+
   @OneToMany(() => Tweet, tweet => tweet.parent, { lazy: true })
   replys: Promise<Tweet[]>;
 }

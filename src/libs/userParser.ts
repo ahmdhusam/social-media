@@ -6,6 +6,7 @@ export function parseUser(user: User): IUser {
     ...user,
     tweets: () => user.tweets,
     likes: () => user.likes,
+    retweets: () => user.retweets,
     followings: () => user.followings,
     followers: () => user.followers
   };

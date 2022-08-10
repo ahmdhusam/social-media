@@ -74,8 +74,16 @@ export default class TweetResolver implements ITweetResolver {
     return parseTweet(newReply);
   }
 
-  retweet(_ctx: { tweetId: string }, _req: Request): Promise<ITweet> {
-    throw new Error('Method not implemented.');
+  async retweet({ tweetId }: { tweetId: string }, req: Request): Promise<ITweet> {
+    if (!req.User) throw new Error('Not authenticated.');
+
+    const tweet = await Tweet.findOneByOrFail({ id: tweetId });
+    if (!tweet) throw new Error('Not Found 404');
+
+    (await req.User.retweets).push(tweet);
+    await req.User.save();
+
+    return parseTweet(tweet);
   }
 
   async deleteTweet({ tweetId }: { tweetId: string }, req: Request): Promise<ITweet> {

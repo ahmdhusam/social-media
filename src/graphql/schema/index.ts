@@ -16,6 +16,7 @@ export default buildSchema(`
         createdAt: Date!
         tweets: [Tweet!]!
         likes: [Tweet!]!
+        retweets: [Tweet!]!
         followings: [User!]!
         followers: [User!]!
     }
@@ -26,6 +27,7 @@ export default buildSchema(`
         createdAt: Date!
         creator: User!
         likedBy: [User!]
+        retweetedBy: [User!]!
         replys: [Tweet!]!
     }
 
@@ -52,6 +54,7 @@ export default buildSchema(`
         createdAt: Date!
         tweets: [Tweet!]!
         likes: [Tweet!]!
+        retweets: [Tweet!]!
         followings: [User!]!
         followers: [User!]!
     }

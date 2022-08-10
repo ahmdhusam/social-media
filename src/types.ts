@@ -16,6 +16,7 @@ export interface IUser {
   createdAt: Date;
   tweets: Lazy<Tweet[]>;
   likes: Lazy<Tweet[]>;
+  retweets: Lazy<Tweet[]>;
   followings: Lazy<User[]>;
   followers: Lazy<User[]>;
 }
@@ -26,6 +27,7 @@ export interface ITweet {
   createdAt: Date;
   creator: Lazy<User>;
   likedBy: Lazy<User[]>;
+  retweetedBy: Lazy<User[]>;
   replys: Lazy<Tweet[]>;
 }
 
