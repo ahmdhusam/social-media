@@ -90,4 +90,5 @@ export interface ITweetResolver {
   retweet(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
   deleteTweet(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
   like(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
+  unLike(ctx: { tweetId: string }, req: Request): Promise<ITweet>;
 }

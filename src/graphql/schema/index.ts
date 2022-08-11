@@ -105,6 +105,7 @@ export default buildSchema(`
         deleteTweet(tweetId: ID!): Tweet!
         changePassword(passwords: ChangePasswordData!): User!
         like(tweetId: ID!): Tweet!
+        unLike(tweetId: ID!): Tweet!
     }
 
     schema {

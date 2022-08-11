@@ -22,6 +22,7 @@ export default class TweetResolver implements ITweetResolver {
     this.retweet = this.retweet;
     this.deleteTweet = this.deleteTweet;
     this.like = this.like;
+    this.unLike = this.unLike;
   }
 
   async createTweet({ tweet }: { tweet: ITweetData }, req: Request): Promise<ITweet> {
@@ -109,6 +110,18 @@ export default class TweetResolver implements ITweetResolver {
     if (!tweet) throw new Error('Not Found 404');
 
     (await req.User.likes).push(tweet);
+    await req.User.save();
+
+    return parseTweet(tweet);
+  }
+
+  async unLike({ tweetId }: { tweetId: string }, req: Request): Promise<ITweet> {
+    if (!req.User) throw new Error('Not authenticated.');
+
+    const tweet = await Tweet.findOneByOrFail({ id: tweetId });
+    if (!tweet) throw new Error('Not Found 404');
+
+    req.User.likes = Promise.resolve((await req.User.likes).filter(twt => twt.id !== tweet.id));
     await req.User.save();
 
     return parseTweet(tweet);
