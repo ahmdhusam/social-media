@@ -102,6 +102,7 @@ export default buildSchema(`
         unfollow(userId: ID!): User!
         addReply(reply: ReplyData): Tweet!
         retweet(tweetId: ID!): Tweet!
+        unRetweet(tweetId: ID!): Tweet!
         deleteTweet(tweetId: ID!): Tweet!
         changePassword(passwords: ChangePasswordData!): User!
         like(tweetId: ID!): Tweet!
