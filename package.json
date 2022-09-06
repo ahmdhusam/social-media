@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node src/app",
     "dev": "nodemon dist/app",
+    "dev:ts": "ts-node-dev --clear src/app",
     "tsc:w": "tsc -w",
     "test": "vitest",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
@@ -40,6 +41,7 @@
     "nodemon": "^2.0.18",
     "prettier": "^2.7.1",
     "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^4.7.4",
     "vitest": "^0.17.0"
   }

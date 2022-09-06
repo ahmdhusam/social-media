@@ -1,7 +1,6 @@
 import type { Request } from 'express';
 import type { IReplyData, ITweet, ITweetData, ITweetResolver } from '../types';
-import { In } from 'typeorm';
-import { Tweet } from '../models';
+import { Tweet, User } from '../models';
 import { TweetDataValidate, ReplyDataValidate, parseTweet } from '../libs';
 
 export default class TweetResolver implements ITweetResolver {
@@ -50,13 +49,29 @@ export default class TweetResolver implements ITweetResolver {
 
   async getTimeline(_: never, req: Request): Promise<ITweet[]> {
     if (!req.User) throw new Error('Not authenticated.');
+    const { limit = 20, skip = 0 } = req.query;
+    const take = Math.min(Math.trunc(+limit), 30);
+    const offset = Math.trunc(+skip);
 
-    const followingsIds = (await req.User.followings).map(user => user.id);
-    const timelineTweets = await Tweet.find({
-      where: [{ creator: { id: req.User.id } }, { creator: { id: In(followingsIds) } }],
-      order: { createdAt: 'DESC' },
-      take: 20
-    });
+    if (isNaN(take) || take < 1) throw new Error('limit must be a positive number');
+    if (isNaN(offset) || offset < 1) throw new Error('skip must be a positive number');
+
+    const timelineTweets = await Tweet.createQueryBuilder('tweet')
+      .where('tweet.creator_id = :id', { id: req.User.id })
+      .orWhere(qb => {
+        const sub = qb
+          .subQuery()
+          .select(['followings.id'])
+          .from(User, 'user')
+          .innerJoin('user.followings', 'followings')
+          .where('user.id = :uid', { uid: req.User.id })
+          .getQuery();
+        return 'tweet.creator_id IN ' + sub;
+      })
+      .orderBy('tweet.createdAt', 'DESC')
+      .take(take)
+      .skip(offset)
+      .getMany();
 
     return timelineTweets.map(tweet => parseTweet(tweet));
   }
