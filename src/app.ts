@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import { graphqlHTTP } from 'express-graphql';
+import multer from 'multer';
 
 // Midllewares
 import { auth, isAdmin } from './midlleware';
@@ -44,7 +45,14 @@ const limiter = rateLimit({
 const fileStream = fs.createWriteStream(path.join(__dirname, '..', 'logs', 'log.log'), {
   flags: 'a'
 });
+const storage = multer.memoryStorage();
 
+const upload = multer({
+  fileFilter(_req, file, callback) {
+    callback(null, ['image/png', 'image/jpeg', 'image/jpg'].includes(file.mimetype));
+  },
+  storage
+});
 // Apply the rate limiting middleware to all requests
 __isProd__ && app.use(limiter);
 __isProd__ && app.use(helmet());
@@ -58,6 +66,10 @@ app.use(auth);
 
 app.use(
   '/graphql',
+  upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'header', maxCount: 1 }
+  ]),
   graphqlHTTP({
     schema: graphQLSchema,
     rootValue: graphQLResolver,
