@@ -1,7 +1,7 @@
 import type { Request } from 'express';
 import type { IReplyData, ITweet, ITweetData, ITweetResolver } from '../types';
 import { Tweet, User } from '../models';
-import { TweetDataValidate, ReplyDataValidate, parseTweet } from '../libs';
+import { TweetDataValidate, ReplyDataValidate, parseTweet, TimelineOptions } from '../libs';
 
 export default class TweetResolver implements ITweetResolver {
   private static instance: TweetResolver;
@@ -49,12 +49,8 @@ export default class TweetResolver implements ITweetResolver {
 
   async getTimeline(_: never, req: Request): Promise<ITweet[]> {
     if (!req.User) throw new Error('Not authenticated.');
-    const { limit = 20, skip = 0 } = req.query;
-    const take = Math.min(Math.trunc(+limit), 30);
-    const offset = Math.trunc(+skip);
 
-    if (isNaN(take) || take < 1) throw new Error('limit must be a positive number');
-    if (isNaN(offset) || offset < 1) throw new Error('skip must be a positive number');
+    const { limit = 20, skip = 0 } = await TimelineOptions.validate(req.query);
 
     const timelineTweets = await Tweet.createQueryBuilder('tweet')
       .where('tweet.creator_id = :id', { id: req.User.id })
@@ -69,8 +65,8 @@ export default class TweetResolver implements ITweetResolver {
         return 'tweet.creator_id IN ' + sub;
       })
       .orderBy('tweet.createdAt', 'DESC')
-      .take(take)
-      .skip(offset)
+      .take(Math.min(limit, 50))
+      .skip(skip)
       .getMany();
 
     return timelineTweets.map(tweet => parseTweet(tweet));

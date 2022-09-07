@@ -28,3 +28,8 @@ export const PasswordsDataValidate = Yup.object().shape({
   new: Yup.string().required().trim().min(8).max(150),
   old: Yup.string().required().trim().min(8).max(150)
 });
+
+export const TimelineOptions = Yup.object().shape({
+  limit: Yup.number().optional().positive().integer(),
+  skip: Yup.number().optional().positive().integer()
+});
