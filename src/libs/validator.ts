@@ -29,7 +29,15 @@ export const PasswordsDataValidate = Yup.object().shape({
   old: Yup.string().required().trim().min(8).max(150)
 });
 
-export const TimelineOptions = Yup.object().shape({
+export const TimelineOptionsValidate = Yup.object().shape({
   limit: Yup.number().optional().positive().integer(),
   skip: Yup.number().optional().positive().integer()
+});
+
+export const EditUserDataValidate = Yup.object().shape({
+  gender: Yup.string().optional().trim().lowercase().oneOf([Gender.Male, Gender.Female]),
+  birthDate: Yup.date().optional(),
+  email: Yup.string().optional().trim().min(3).max(49).lowercase().email(),
+  userName: Yup.string().optional().trim().min(3).max(39).lowercase(),
+  name: Yup.string().optional().trim().min(3).max(99)
 });

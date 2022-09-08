@@ -80,6 +80,7 @@ export interface IUserResolver {
   follow(ctx: { userId: string }, req: Request): Promise<IUser>;
   unfollow(ctx: { userId: string }, req: Request): Promise<IUser>;
   changePassword(ctx: { passwords: IChangePasswordData }, req: Request): Promise<IUser>;
+  editProfile(ctx: { userData: Omit<IUserData, 'password'> }, req: Request): Promise<IUser>;
 }
 
 export interface ITweetResolver {

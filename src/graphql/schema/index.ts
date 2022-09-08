@@ -68,6 +68,14 @@ export default buildSchema(`
         password: String!
     }
 
+    input EditUserData {
+        name: String
+        userName: String
+        email: String
+        birthDate: Date
+        gender: String
+    }
+
     input LoginData {
         email: String!
         password: String!
@@ -107,6 +115,7 @@ export default buildSchema(`
         changePassword(passwords: ChangePasswordData!): User!
         like(tweetId: ID!): Tweet!
         unLike(tweetId: ID!): Tweet!
+        editProfile(userData: EditUserData!): User!
     }
 
     schema {

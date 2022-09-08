@@ -9,11 +9,14 @@ import type {
   IChangePasswordData
 } from '../types';
 
+import { unlink } from 'fs/promises';
+
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import sharp from 'sharp';
 
 import { User } from '../models';
-import { LoginDataValidate, parseUser, PasswordsDataValidate, UserDataValidate } from '../libs';
+import { EditUserDataValidate, LoginDataValidate, parseUser, PasswordsDataValidate, UserDataValidate } from '../libs';
 
 export default class UserResolver implements IUserResolver {
   private static instance: UserResolver;
@@ -35,6 +38,7 @@ export default class UserResolver implements IUserResolver {
     this.follow = this.follow;
     this.unfollow = this.unfollow;
     this.changePassword = this.changePassword;
+    this.editProfile = this.editProfile;
   }
 
   async me(_: never, req: Request): Promise<IUser> {
@@ -116,6 +120,52 @@ export default class UserResolver implements IUserResolver {
     if (!isValid) throw new Error('Password incorrect');
 
     req.User.password = await bcrypt.hash(passwords.new, this.salt);
+    await req.User.save();
+
+    return parseUser(req.User);
+  }
+
+  async editProfile({ userData }: { userData: Omit<IUserData, 'password'> }, req: Request): Promise<IUser> {
+    if (!req.User) throw new Error('Not authenticated');
+
+    await EditUserDataValidate.validate(userData);
+
+    Object.assign(req.User, userData);
+
+    if (!req.files) {
+      await req.User.save();
+
+      return parseUser(req.User);
+    }
+
+    if ('avatar' in req.files) {
+      const { avatar } = req.files;
+
+      const avatarPath = `/images/users/${req.User.id}-${Date.now().toString(36)}.jpg`;
+      await sharp(avatar[0].buffer)
+        .resize(400, 400)
+        .jpeg({ quality: 90 })
+        .toFormat('jpg')
+        .toFile(`public${avatarPath}`);
+
+      if (req.User.avatar !== '/images/avatar.png') await unlink(`public${req.User.avatar}`);
+      req.User.avatar = avatarPath;
+    }
+
+    if ('header' in req.files) {
+      const { header } = req.files;
+
+      const headerPath = `/images/users/${req.User.id}-${Date.now().toString(36)}.jpg`;
+      await sharp(header[0].buffer)
+        .resize(600, 200)
+        .jpeg({ quality: 90 })
+        .toFormat('jpg')
+        .toFile(`public${headerPath}`);
+
+      if (req.User.header) await unlink(`public${req.User.header}`);
+      req.User.header = headerPath;
+    }
+
     await req.User.save();
 
     return parseUser(req.User);
