@@ -9,14 +9,12 @@ import type {
   IChangePasswordData
 } from '../types';
 
-import { unlink } from 'fs/promises';
-
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import sharp from 'sharp';
 
 import { User } from '../models';
 import { EditUserDataValidate, LoginDataValidate, parseUser, PasswordsDataValidate, UserDataValidate } from '../libs';
+import { ImagesService } from './services';
 
 export default class UserResolver implements IUserResolver {
   private static instance: UserResolver;
@@ -25,12 +23,12 @@ export default class UserResolver implements IUserResolver {
 
   static get getInstance(): UserResolver {
     if (!this.instance) {
-      this.instance = new this();
+      this.instance = new this(new ImagesService());
     }
     return this.instance;
   }
 
-  private constructor() {
+  private constructor(private readonly imagesService: ImagesService) {
     this.me = this.me;
     this.createUser = this.createUser;
     this.login = this.login;
@@ -140,30 +138,24 @@ export default class UserResolver implements IUserResolver {
 
     if ('avatar' in req.files) {
       const { avatar } = req.files;
+      const oldPath = req.User.avatar;
 
-      const avatarPath = `/images/users/${req.User.id}-${Date.now().toString(36)}.jpg`;
-      await sharp(avatar[0].buffer)
-        .resize(400, 400)
-        .jpeg({ quality: 90 })
-        .toFormat('jpg')
-        .toFile(`public${avatarPath}`);
-
-      if (req.User.avatar !== '/images/avatar.png') await unlink(`public${req.User.avatar}`);
-      req.User.avatar = avatarPath;
+      req.User.avatar = await this.imagesService.generateFilePath(req.User.id, avatar[0].buffer, {
+        width: 400,
+        height: 400
+      });
+      if (oldPath !== '/images/avatar.png') await this.imagesService.delete(oldPath);
     }
 
     if ('header' in req.files) {
       const { header } = req.files;
+      const oldPath = req.User.header;
 
-      const headerPath = `/images/users/${req.User.id}-${Date.now().toString(36)}.jpg`;
-      await sharp(header[0].buffer)
-        .resize(600, 200)
-        .jpeg({ quality: 90 })
-        .toFormat('jpg')
-        .toFile(`public${headerPath}`);
-
-      if (req.User.header) await unlink(`public${req.User.header}`);
-      req.User.header = headerPath;
+      req.User.header = await this.imagesService.generateFilePath(req.User.id, header[0].buffer, {
+        width: 600,
+        height: 200
+      });
+      if (oldPath) await this.imagesService.delete(oldPath);
     }
 
     await req.User.save();
