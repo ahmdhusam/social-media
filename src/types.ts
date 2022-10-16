@@ -29,6 +29,11 @@ export interface ITweet {
   likedBy: Lazy<User[]>;
   retweetedBy: Lazy<User[]>;
   replys: Lazy<Tweet[]>;
+  images: image[];
+}
+
+interface image {
+  path: string;
 }
 
 export interface ICreatedUser {

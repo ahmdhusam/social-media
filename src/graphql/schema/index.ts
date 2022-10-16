@@ -26,9 +26,14 @@ export default buildSchema(`
         content: String!
         createdAt: Date!
         creator: User!
+        images:[image!]!
         likedBy: [User!]
         retweetedBy: [User!]!
         replys: [Tweet!]!
+    }
+
+    type image {
+        path: String!
     }
 
     type CreatedUser {

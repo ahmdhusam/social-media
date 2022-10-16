@@ -1,19 +1,20 @@
 import type { Request } from 'express';
 import type { IReplyData, ITweet, ITweetData, ITweetResolver } from '../types';
-import { Tweet, User } from '../models';
-import { TweetDataValidate, ReplyDataValidate, parseTweet, TimelineOptionsValidate } from '../libs';
+import { Tweet, TweetImages, User } from '../models';
+import { TweetDataValidate, ReplyDataValidate, parseTweet, TimelineOptionsValidate, entityManager } from '../libs';
+import { ImagesService } from './services';
 
 export default class TweetResolver implements ITweetResolver {
   private static instance: TweetResolver;
 
   static get getInstance(): TweetResolver {
     if (!this.instance) {
-      this.instance = new this();
+      this.instance = new this(ImagesService.getInstance);
     }
     return this.instance;
   }
 
-  private constructor() {
+  private constructor(private readonly imagesService: ImagesService) {
     this.createTweet = this.createTweet;
     this.getTweet = this.getTweet;
     this.getTimeline = this.getTimeline;
@@ -31,10 +32,23 @@ export default class TweetResolver implements ITweetResolver {
     const validTweet = await TweetDataValidate.validate(tweet);
 
     const newTweet = new Tweet();
+    const imagesPath: TweetImages[] = [];
+
     Object.assign(newTweet, validTweet, { creator: req.User });
 
-    await Tweet.save(newTweet);
+    if (req.files && 'images' in req.files) {
+      const { images } = req.files;
 
+      for (const img of images) {
+        const imgPath = await this.imagesService.generateFilePath('tweets', req.User.id, img.buffer);
+        imagesPath.push(TweetImages.create({ path: imgPath }));
+      }
+
+      newTweet.images = imagesPath;
+    }
+    await entityManager.save([newTweet, ...imagesPath]);
+
+    await newTweet.reload();
     return parseTweet(newTweet);
   }
 
@@ -53,6 +67,7 @@ export default class TweetResolver implements ITweetResolver {
     const { limit = 20, skip = 0 } = await TimelineOptionsValidate.validate(req.query);
 
     const timelineTweets = await Tweet.createQueryBuilder('tweet')
+      .setFindOptions({ loadEagerRelations: true })
       .where('tweet.creator_id = :id', { id: req.User.id })
       .orWhere(qb => {
         const sub = qb
@@ -120,9 +135,17 @@ export default class TweetResolver implements ITweetResolver {
     if (!tweet) throw new Error('Not Found 404');
 
     const ONE_SEC = 1000;
-    setTimeout(() => {
-      Tweet.delete({ id: tweetId });
-    }, ONE_SEC);
+    setTimeout(
+      (tweetId: string, imagesPath: TweetImages[]) => {
+        imagesPath.forEach(({ path }) => {
+          this.imagesService.delete(path);
+        });
+        Tweet.delete({ id: tweetId });
+      },
+      ONE_SEC,
+      tweet.id,
+      tweet.images
+    );
 
     return parseTweet(tweet);
   }

@@ -10,6 +10,7 @@ import {
   ManyToMany,
   JoinColumn
 } from 'typeorm';
+import { TweetImages } from './tweet-images.model';
 import { User } from './userEntity';
 
 @Entity({ name: 'tweets' })
@@ -41,4 +42,7 @@ export class Tweet extends BaseEntity {
 
   @OneToMany(() => Tweet, tweet => tweet.parent, { lazy: true })
   replys: Promise<Tweet[]>;
+
+  @OneToMany(() => TweetImages, tweetImages => tweetImages.tweet, { eager: true })
+  images: TweetImages[];
 }

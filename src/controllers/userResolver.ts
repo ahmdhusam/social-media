@@ -23,7 +23,7 @@ export default class UserResolver implements IUserResolver {
 
   static get getInstance(): UserResolver {
     if (!this.instance) {
-      this.instance = new this(new ImagesService());
+      this.instance = new this(ImagesService.getInstance);
     }
     return this.instance;
   }
@@ -140,7 +140,7 @@ export default class UserResolver implements IUserResolver {
       const { avatar } = req.files;
       const oldPath = req.User.avatar;
 
-      req.User.avatar = await this.imagesService.generateFilePath(req.User.id, avatar[0].buffer, {
+      req.User.avatar = await this.imagesService.generateFilePath('users', req.User.id, avatar[0].buffer, {
         width: 400,
         height: 400
       });
@@ -151,7 +151,7 @@ export default class UserResolver implements IUserResolver {
       const { header } = req.files;
       const oldPath = req.User.header;
 
-      req.User.header = await this.imagesService.generateFilePath(req.User.id, header[0].buffer, {
+      req.User.header = await this.imagesService.generateFilePath('users', req.User.id, header[0].buffer, {
         width: 600,
         height: 200
       });
